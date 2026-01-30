@@ -1,0 +1,22 @@
+{
+    "name": "Design Tokens Importer",
+    "id": "design-tokens-importer",
+    "api": "1.0.0",
+    "main": "main.js",
+    "ui": "ui.html",
+    "capabilities": [],
+    "enableProposedApi": false,
+    "editorType": [
+        "figma"
+    ],
+    "menu": [
+        {
+            "name": "📁 Import Tokens",
+            "command": "import-ui"
+        },
+        {
+            "name": "📤 Export Design",
+            "command": "export-ui"
+        }
+    ]
+}

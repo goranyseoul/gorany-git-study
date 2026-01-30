@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 16px;
+      background: #2c2c2c;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    h2 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .section {
+      margin-bottom: 16px;
+    }
+
+    .label {
+      font-size: 11px;
+      color: #999;
+      margin-bottom: 6px;
+    }
+
+    .file-drop {
+      border: 2px dashed #555;
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+
+    .file-drop:hover,
+    .file-drop.dragover {
+      border-color: #0d99ff;
+      background: rgba(13, 153, 255, 0.1);
+    }
+
+    .file-drop input {
+      display: none;
+    }
+
+    .file-drop-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .file-drop-text {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .file-list {
+      font-size: 11px;
+      color: #999;
+      margin-bottom: 12px;
+    }
+
+    .file-item {
+      background: #383838;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .file-item .name {
+      color: #fff;
+    }
+
+    .file-item .remove {
+      color: #ff6b6b;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 8px;
+    }
+
+    .btn-primary {
+      background: #0d99ff;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #0b84e0;
+    }
+
+    .btn-primary:disabled {
+      background: #555;
+      color: #888;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #383838;
+      color: #fff;
+    }
+
+    .btn-secondary:hover {
+      background: #444;
+    }
+
+    .status {
+      font-size: 11px;
+      padding: 8px;
+      border-radius: 4px;
+      margin-top: 12px;
+    }
+
+    .status.success {
+      background: rgba(93, 219, 147, 0.2);
+      color: #5DDB93;
+    }
+
+    .status.error {
+      background: rgba(216, 103, 92, 0.2);
+      color: #D8675C;
+    }
+
+    .status.info {
+      background: rgba(13, 153, 255, 0.2);
+      color: #0d99ff;
+    }
+
+    .checkbox-group {
+      margin-top: 12px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .checkbox-item input {
+      margin-right: 8px;
+    }
+
+    .checkbox-item label {
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>🎨 Design Tokens → Figma</h2>
+
+  <div class="section">
+    <div class="label">JSON 파일 불러오기</div>
+    <div class="file-drop" id="fileDrop">
+      <div class="file-drop-icon">📁</div>
+      <div class="file-drop-text">클릭하거나 파일을 드래그하세요<br>(colors.json, typography.json 등)</div>
+      <input type="file" id="fileInput" accept=".json" multiple>
+    </div>
+    <div class="file-list" id="fileList"></div>
+  </div>
+
+  <div class="section">
+    <div class="label">생성할 항목 선택</div>
+    <div class="checkbox-group">
+      <div class="checkbox-item">
+        <input type="checkbox" id="chkVariables" checked>
+        <label for="chkVariables">🎨 Variables (Colors, Spacing, Radius)</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="chkTextStyles" checked>
+        <label for="chkTextStyles">📝 Text Styles (Typography)</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="chkComponents" checked>
+        <label for="chkComponents">🧩 Components (Button, Input, Card 등)</label>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="btnCreate" disabled>📦 Figma에 생성하기</button>
+
+  <!-- Design System Export 섹션 -->
+  <div class="section" style="margin-top: 24px; border-top: 1px solid #444; padding-top: 16px;">
+    <h2>📤 Design System Export</h2>
+    <div class="label">Variables, Styles, Components를 추출하여 Style Guide 생성</div>
+
+    <div class="checkbox-group" style="margin-top: 12px;">
+      <div class="checkbox-item">
+        <input type="checkbox" id="chkExportColors" checked>
+        <label for="chkExportColors">🎨 Colors & Variables</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="chkExportTypo" checked>
+        <label for="chkExportTypo">📝 Typography (Text Styles)</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="chkExportComps" checked>
+        <label for="chkExportComps">🧩 Components (선택된 프레임)</label>
+      </div>
+      <div class="checkbox-item">
+        <input type="checkbox" id="chkStyleGuide" checked>
+        <label for="chkStyleGuide">📚 Style Guide 페이지 생성</label>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btnExportDS" style="margin-top: 12px;">📦 Design System 추출</button>
+
+    <div id="downloadLinks" style="margin-top: 12px;"></div>
+  </div>
+
+  <!-- 기존 HTML Export (숨김) -->
+  <details style="margin-top: 16px;">
+    <summary style="cursor: pointer; font-size: 12px; color: #888;">🔧 개별 HTML Export (고급)</summary>
+    <div style="padding-top: 12px;">
+      <button class="btn btn-secondary" id="btnScan">🔍 프레임 스캔</button>
+      <div id="componentList" class="file-list" style="margin-top: 12px; max-height: 100px; overflow-y: auto;"></div>
+      <div class="checkbox-group" style="margin-top: 8px;">
+        <div class="checkbox-item">
+          <input type="checkbox" id="chkSeparateCSS" checked>
+          <label for="chkSeparateCSS">별도 CSS 파일</label>
+        </div>
+        <div class="checkbox-item">
+          <input type="checkbox" id="chkPreviewPage" checked>
+          <label for="chkPreviewPage">preview.html 생성</label>
+        </div>
+      </div>
+      <button class="btn btn-secondary" id="btnExport" disabled style="margin-top: 8px;">💾 HTML Export</button>
+    </div>
+  </details>
+
+  <button class="btn btn-secondary" id="btnClear">🗑️ 기존 스타일/변수 삭제</button>
+  <button class="btn btn-secondary" id="btnClose">닫기</button>
+
+  <div class="status info" id="status" style="display:none;"></div>
+
+  <script>
+    const fileDrop = document.getElementById('fileDrop');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const btnCreate = document.getElementById('btnCreate');
+    const btnClose = document.getElementById('btnClose');
+    const statusEl = document.getElementById('status');
+
+    let loadedFiles = {};
+
+    // 파일 드롭 이벤트
+    fileDrop.addEventListener('click', () => fileInput.click());
+    fileDrop.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      fileDrop.classList.add('dragover');
+    });
+    fileDrop.addEventListener('dragleave', () => {
+      fileDrop.classList.remove('dragover');
+    });
+    fileDrop.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fileDrop.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    function handleFiles(files) {
+      Array.from(files).forEach(file => {
+        if (file.name.endsWith('.json')) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const data = JSON.parse(e.target.result);
+              loadedFiles[file.name] = data;
+              updateFileList();
+              showStatus('success', `${file.name} 로드 완료`);
+            } catch (err) {
+              showStatus('error', `${file.name} 파싱 실패: ${err.message}`);
+            }
+          };
+          reader.readAsText(file);
+        }
+      });
+    }
+
+    function updateFileList() {
+      const names = Object.keys(loadedFiles);
+      if (names.length === 0) {
+        fileList.innerHTML = '';
+        btnCreate.disabled = true;
+        return;
+      }
+
+      fileList.innerHTML = names.map(name => `
+        <div class="file-item">
+          <span class="name">✅ ${name}</span>
+          <span class="remove" data-name="${name}">×</span>
+        </div>
+      `).join('');
+
+      btnCreate.disabled = false;
+
+      // 삭제 버튼
+      fileList.querySelectorAll('.remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          delete loadedFiles[btn.dataset.name];
+          updateFileList();
+        });
+      });
+    }
+
+    function showStatus(type, message) {
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = message;
+      statusEl.style.display = 'block';
+    }
+
+    // 생성 버튼
+    btnCreate.addEventListener('click', () => {
+      const options = {
+        createVariables: document.getElementById('chkVariables').checked,
+        createTextStyles: document.getElementById('chkTextStyles').checked,
+        createComponents: document.getElementById('chkComponents').checked,
+        files: loadedFiles
+      };
+
+      showStatus('info', '생성 중...');
+      parent.postMessage({ pluginMessage: { type: 'create', options } }, '*');
+    });
+
+    btnClose.addEventListener('click', () => {
+      parent.postMessage({ pluginMessage: { type: 'close' } }, '*');
+    });
+
+    // 삭제 버튼
+    document.getElementById('btnClear').addEventListener('click', () => {
+      showStatus('info', '삭제 중...');
+      parent.postMessage({ pluginMessage: { type: 'clear-all' } }, '*');
+    });
+
+    // ===== Export 기능 =====
+    const btnScan = document.getElementById('btnScan');
+    const btnExport = document.getElementById('btnExport');
+    const componentList = document.getElementById('componentList');
+    const downloadLinks = document.getElementById('downloadLinks');
+    let scannedComponents = [];
+
+    // Design System Export 버튼
+    document.getElementById('btnExportDS').addEventListener('click', () => {
+      const options = {
+        exportColors: document.getElementById('chkExportColors').checked,
+        exportTypography: document.getElementById('chkExportTypo').checked,
+        exportComponents: document.getElementById('chkExportComps').checked,
+        generateStyleGuide: document.getElementById('chkStyleGuide').checked
+      };
+
+      showStatus('info', '📦 Design System 추출 중...');
+      parent.postMessage({ pluginMessage: { type: 'export-design-system', options } }, '*');
+    });
+
+    // 스캔 버튼
+    btnScan.addEventListener('click', () => {
+      showStatus('info', '선택한 프레임 스캔 중...');
+      parent.postMessage({ pluginMessage: { type: 'scan-frames' } }, '*');
+    });
+
+    // 내보내기 버튼
+    btnExport.addEventListener('click', () => {
+      const selectedIds = [];
+      componentList.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+        selectedIds.push(cb.dataset.id);
+      });
+
+      if (selectedIds.length === 0) {
+        showStatus('error', '내보낼 컴포넌트를 선택하세요');
+        return;
+      }
+
+      const options = {
+        selectedIds,
+        separateCSS: document.getElementById('chkSeparateCSS').checked,
+        createPreview: document.getElementById('chkPreviewPage').checked
+      };
+
+      showStatus('info', 'HTML 생성 중...');
+      parent.postMessage({ pluginMessage: { type: 'export-html', options } }, '*');
+    });
+
+    // 플러그인에서 메시지 받기
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+
+      if (msg.type === 'status') {
+        showStatus(msg.status, msg.message);
+      }
+
+      // 스캔 결과 수신
+      if (msg.type === 'scan-result') {
+        scannedComponents = msg.components || [];
+        updateComponentList();
+        showStatus('success', `${scannedComponents.length}개 컴포넌트 발견`);
+      }
+
+      // Export 모드로 포커스
+      if (msg.type === 'focus-export') {
+        const exportSection = document.querySelector('#btnScan').parentElement;
+        if (exportSection) {
+          exportSection.scrollIntoView({ behavior: 'smooth' });
+          showStatus('info', '📤 프레임을 선택 후 스캔하세요');
+        }
+      }
+
+      // Export 결과 수신
+      if (msg.type === 'export-result') {
+        downloadLinks.innerHTML = '';
+        const files = msg.files || [];
+
+        if (files.length === 0) {
+          showStatus('error', '생성된 파일이 없습니다');
+          return;
+        }
+
+        files.forEach(file => {
+          const link = document.createElement('a');
+          link.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(file.content);
+          link.download = file.name;
+          link.className = 'file-item';
+          link.style.display = 'block';
+          link.style.marginBottom = '4px';
+          link.style.textDecoration = 'none';
+          link.innerHTML = `<span class="name">⬇️ ${file.name}</span>`;
+          downloadLinks.appendChild(link);
+        });
+
+        showStatus('success', `${files.length}개 파일 생성 완료! 링크를 클릭하여 다운로드하세요.`);
+      }
+    };
+
+    function updateComponentList() {
+      if (scannedComponents.length === 0) {
+        componentList.innerHTML = '<div style="color:#666;font-size:11px;">스캔된 컴포넌트 없음</div>';
+        btnExport.disabled = true;
+        return;
+      }
+
+      componentList.innerHTML = scannedComponents.map(comp => `
+        <div class="file-item" style="padding: 6px 10px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" data-id="${comp.id}" checked>
+            <span class="name" style="font-size:11px;">${comp.name} (${comp.width}x${comp.height})</span>
+          </label>
+        </div>
+      `).join('');
+
+      btnExport.disabled = false;
+    }
+  </script>
+</body>
+
+</html>

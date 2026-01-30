@@ -1,0 +1,25 @@
+{
+    "name": "design-token-extractor",
+    "version": "1.0.0",
+    "description": "웹사이트에서 디자인 토큰을 자동 추출하는 CLI 도구",
+    "main": "figma-web-parsing/extract-components.js",
+    "bin": {
+        "extract-components": "./figma-web-parsing/extract-components.js"
+    },
+    "scripts": {
+        "extract": "node figma-web-parsing/extract-components.js",
+        "test:naver": "node figma-web-parsing/extract-components.js https://naver.com",
+        "test:google": "node figma-web-parsing/extract-components.js https://google.com"
+    },
+    "dependencies": {
+        "puppeteer": "^21.11.0"
+    },
+    "keywords": [
+        "design-tokens",
+        "figma",
+        "puppeteer",
+        "web-scraping"
+    ],
+    "author": "",
+    "license": "MIT"
+}
