@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>냉장고 재고 관리 앱 - 사용자 플로우</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 {
+      text-align: center;
+      color: #1a1a1a;
+      margin-bottom: 40px;
+      font-size: 28px;
+    }
+    h2 {
+      color: #333;
+      margin: 40px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #4CAF50;
+    }
+    .diagram-container {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .mermaid { text-align: center; }
+    .legend {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧊 냉장고 재고 관리 앱 - 사용자 플로우</h1>
+
+    <h2>📱 전체 앱 구조</h2>
+    <div class="diagram-container">
+      <div class="mermaid">
+flowchart TB
+    subgraph App["냉장고 재고 관리 앱"]
+        Home["🏠 홈<br/>(재고 현황)"]
+        Scan["📷 영수증 스캔"]
+        Recipe["🍳 레시피 추천"]
+        Meal["🍽️ 식사 기록"]
+        Settings["⚙️ 설정"]
+    end
+
+    Home --> Scan
+    Home --> Recipe
+    Home --> Meal
+    Home --> Settings
+
+    Scan --> |"재고 추가"| Home
+    Recipe --> |"요리 시작"| Meal
+    Meal --> |"재고 차감"| Home
+      </div>
+    </div>
+
+    <h2>1️⃣ 영수증 스캔 플로우</h2>
+    <div class="diagram-container">
+      <div class="mermaid">
+flowchart LR
+    A["📷 스캔 버튼"] --> B{"입력 방식"}
+    B --> |"카메라"| C["촬영"]
+    B --> |"갤러리"| D["이미지 선택"]
+    C --> E["OCR 처리"]
+    D --> E
+    E --> F["결과 확인<br/>(품목/수량/가격/날짜)"]
+    F --> G{"수정 필요?"}
+    G --> |"예"| H["수동 수정"]
+    G --> |"아니오"| I["등록 완료"]
+    H --> I
+    I --> J["✅ 재고 추가됨"]
+
+    style A fill:#4CAF50,color:#fff
+    style J fill:#2196F3,color:#fff
+      </div>
+    </div>
+
+    <h2>2️⃣ 레시피 추천 플로우</h2>
+    <div class="diagram-container">
+      <div class="mermaid">
+flowchart LR
+    A["🍳 레시피 탭"] --> B["현재 재고 분석"]
+    B --> C["추천 목록 표시"]
+    C --> D["레시피 선택"]
+    D --> E["상세 보기<br/>(재료/조리법/칼로리)"]
+    E --> F{"요리할까?"}
+    F --> |"예"| G["요리 시작"]
+    F --> |"아니오"| C
+    G --> H["재료 예약 차감"]
+    H --> I["🍽️ 식사 기록으로"]
+
+    style A fill:#FF9800,color:#fff
+    style I fill:#E91E63,color:#fff
+      </div>
+    </div>
+
+    <h2>3️⃣ 식사 기록 플로우</h2>
+    <div class="diagram-container">
+      <div class="mermaid">
+flowchart LR
+    A["🍽️ 식사 기록"] --> B["음식 사진 촬영"]
+    B --> C["AI 음식 인식"]
+    C --> D["칼로리 추정"]
+    D --> E["사용 재료 매칭"]
+    E --> F{"수정 필요?"}
+    F --> |"예"| G["수동 수정"]
+    F --> |"아니오"| H["저장"]
+    G --> H
+    H --> I["재고 차감"]
+    I --> J["✅ 기록 완료"]
+
+    style A fill:#E91E63,color:#fff
+    style J fill:#2196F3,color:#fff
+      </div>
+    </div>
+
+    <h2>4️⃣ 가족 공유 플로우</h2>
+    <div class="diagram-container">
+      <div class="mermaid">
+flowchart LR
+    A["⚙️ 설정"] --> B["가족 관리"]
+    B --> C["멤버 초대"]
+    C --> D["초대 링크 생성"]
+    D --> E["링크 공유<br/>(카톡/문자)"]
+    E --> F["수락"]
+    F --> G["✅ 냉장고 공유"]
+
+    subgraph Sync["실시간 동기화"]
+        G --> H["재고 변경"]
+        H --> I["모든 멤버에게<br/>즉시 반영"]
+    end
+
+    style A fill:#9C27B0,color:#fff
+    style G fill:#2196F3,color:#fff
+      </div>
+    </div>
+
+    <h2>📊 데이터 흐름</h2>
+    <div class="diagram-container">
+      <div class="mermaid">
+flowchart TB
+    subgraph Input["입력"]
+        R["📄 영수증"]
+        M["📸 식사 사진"]
+        Manual["✏️ 수동 입력"]
+    end
+
+    subgraph Process["처리"]
+        OCR["OCR 엔진"]
+        AI["AI 인식"]
+        DB["재고 DB"]
+    end
+
+    subgraph Output["출력"]
+        Stock["📦 재고 현황"]
+        Recipe["🍳 레시피 추천"]
+        Cal["🔥 칼로리 기록"]
+        Alert["🔔 유통기한 알림"]
+    end
+
+    R --> OCR --> DB
+    M --> AI --> DB
+    Manual --> DB
+
+    DB --> Stock
+    DB --> Recipe
+    DB --> Cal
+    DB --> Alert
+
+    style DB fill:#4CAF50,color:#fff
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color" style="background: #4CAF50;"></div>
+        <span>시작점 / 핵심</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #2196F3;"></div>
+        <span>완료</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #FF9800;"></div>
+        <span>레시피</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #E91E63;"></div>
+        <span>식사 기록</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #9C27B0;"></div>
+        <span>설정</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+        curve: 'basis'
+      }
+    });
+  </script>
+</body>
+</html>
