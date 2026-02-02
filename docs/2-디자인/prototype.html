@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>냉장고 재고 관리 앱 - 프로토타입</title>
+  <link href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #FFD43B;
+      --primary-dark: #F59F00;
+      --secondary: #51CF66;
+      --bg: #FFFDF7;
+      --surface: #F8F9FA;
+      --text: #212529;
+      --text-secondary: #868E96;
+      --danger: #FF6B6B;
+      --border: #E9ECEF;
+      --white: #FFFFFF;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      background: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .phone-frame {
+      width: 375px;
+      height: 812px;
+      background: var(--bg);
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header */
+    .header {
+      padding: 60px 20px 16px;
+      background: var(--white);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-back {
+      padding: 8px;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .header-right {
+      width: 36px;
+    }
+
+    /* Home Header */
+    .home-header {
+      padding: 60px 20px 16px;
+      background: var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .home-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .family-badge {
+      font-size: 14px;
+      background: rgba(255,255,255,0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* Content */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    /* Summary Cards */
+    .summary-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .summary-card {
+      flex: 1;
+      background: var(--white);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .summary-card .label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .summary-card .value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-more {
+      font-size: 14px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    /* Expiring Carousel */
+    .expiring-carousel {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin: 0 -16px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .expiring-carousel::-webkit-scrollbar {
+      display: none;
+    }
+
+    .expiring-item {
+      min-width: 100px;
+      background: var(--white);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .expiring-item .emoji {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .expiring-item .name {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .expiring-item .dday {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+
+    .dday-danger { background: #FFE3E3; color: var(--danger); }
+    .dday-warning { background: #FFF3BF; color: var(--primary-dark); }
+    .dday-safe { background: #D3F9D8; color: #2B8A3E; }
+
+    /* Stock List */
+    .stock-list {
+      background: var(--white);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .stock-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .stock-item:last-child {
+      border-bottom: none;
+    }
+
+    .stock-item:active {
+      background: var(--surface);
+    }
+
+    .stock-item .emoji {
+      font-size: 24px;
+      margin-right: 12px;
+    }
+
+    .stock-item .info {
+      flex: 1;
+    }
+
+    .stock-item .name {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .stock-item .qty {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .stock-item .dday-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* FAB */
+    .fab {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary);
+      color: var(--text);
+      padding: 14px 24px;
+      border-radius: 30px;
+      font-size: 15px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(255,212,59,0.4);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .fab:hover {
+      transform: translateX(-50%) scale(1.05);
+      box-shadow: 0 6px 16px rgba(255,212,59,0.5);
+    }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      display: flex;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 8px 0 28px;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+
+    .nav-item.active {
+      color: var(--primary-dark);
+    }
+
+    .nav-item .icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .nav-item .label {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    /* Scan Screen */
+    .camera-area {
+      flex: 1;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      position: relative;
+    }
+
+    .camera-frame {
+      width: 280px;
+      height: 380px;
+      border: 3px dashed rgba(255,255,255,0.5);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .camera-frame .icon {
+      font-size: 48px;
+    }
+
+    .camera-hint {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      margin-top: 20px;
+    }
+
+    .scan-buttons {
+      display: flex;
+      gap: 16px;
+      padding: 24px;
+      background: var(--white);
+    }
+
+    .scan-btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.2s;
+    }
+
+    .scan-btn:active {
+      transform: scale(0.98);
+    }
+
+    .scan-btn.secondary {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .scan-btn.primary {
+      background: var(--primary);
+      color: var(--text);
+    }
+
+    /* Scan Result */
+    .result-header {
+      background: var(--surface);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    .result-header .store {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .result-header .date {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .result-list {
+      background: var(--white);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .result-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-item .emoji {
+      font-size: 24px;
+      margin-right: 12px;
+    }
+
+    .result-item .info {
+      flex: 1;
+    }
+
+    .result-item .name {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .result-item .detail {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .result-item .expiry-btn {
+      font-size: 13px;
+      color: var(--primary-dark);
+      background: var(--surface);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .add-item-btn {
+      width: 100%;
+      padding: 14px;
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 16px;
+      background: transparent;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Recipe Screen */
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .filter-tab {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .filter-tab.active {
+      background: var(--primary);
+      color: var(--text);
+    }
+
+    .recipe-card {
+      background: var(--white);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .recipe-card:active {
+      transform: scale(0.98);
+    }
+
+    .recipe-img {
+      height: 160px;
+      background: linear-gradient(135deg, #FFE066, #FF922B);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+    }
+
+    .recipe-info {
+      padding: 16px;
+    }
+
+    .recipe-name {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .recipe-meta {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .recipe-ingredients {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .recipe-ingredients .available {
+      color: var(--secondary);
+    }
+
+    /* Meal Record Screen */
+    .photo-area {
+      background: var(--surface);
+      border-radius: 16px;
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+
+    .photo-area .icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .photo-area .text {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .meal-type-section {
+      margin-bottom: 20px;
+    }
+
+    .meal-type-section .label {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .meal-types {
+      display: flex;
+      gap: 10px;
+    }
+
+    .meal-type {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .meal-type.active {
+      background: var(--primary);
+      color: var(--text);
+    }
+
+    .memo-section {
+      margin-bottom: 20px;
+    }
+
+    .memo-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      resize: none;
+    }
+
+    .memo-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* Navigation hint */
+    .nav-hint {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <!-- Screen: Home -->
+    <div class="screen active" id="screen-home">
+      <div class="home-header">
+        <h1>🧊 우리집 냉장고</h1>
+        <span class="family-badge">👨‍👩‍👧 김씨네</span>
+      </div>
+      <div class="content">
+        <div class="summary-row">
+          <div class="summary-card">
+            <div class="label">총 품목</div>
+            <div class="value">32개</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">유통기한 임박</div>
+            <div class="value" style="color: var(--danger)">5개</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span class="section-title">⚠️ 유통기한 임박</span>
+          </div>
+          <div class="expiring-carousel">
+            <div class="expiring-item">
+              <div class="emoji">🥛</div>
+              <div class="name">우유</div>
+              <div class="dday dday-danger">D-1</div>
+            </div>
+            <div class="expiring-item">
+              <div class="emoji">🥬</div>
+              <div class="name">상추</div>
+              <div class="dday dday-warning">D-2</div>
+            </div>
+            <div class="expiring-item">
+              <div class="emoji">🍖</div>
+              <div class="name">삼겹살</div>
+              <div class="dday dday-warning">D-3</div>
+            </div>
+            <div class="expiring-item">
+              <div class="emoji">🧀</div>
+              <div class="name">치즈</div>
+              <div class="dday dday-safe">D-5</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span class="section-title">📦 전체 재고</span>
+            <span class="section-more">모두보기 ›</span>
+          </div>
+          <div class="stock-list">
+            <div class="stock-item">
+              <span class="emoji">🥛</span>
+              <div class="info">
+                <div class="name">서울우유 1L</div>
+                <div class="qty">1개</div>
+              </div>
+              <span class="dday-badge dday-danger">D-1</span>
+            </div>
+            <div class="stock-item">
+              <span class="emoji">🥬</span>
+              <div class="info">
+                <div class="name">상추</div>
+                <div class="qty">2봉</div>
+              </div>
+              <span class="dday-badge dday-warning">D-2</span>
+            </div>
+            <div class="stock-item">
+              <span class="emoji">🍖</span>
+              <div class="info">
+                <div class="name">삼겹살</div>
+                <div class="qty">500g</div>
+              </div>
+              <span class="dday-badge dday-warning">D-3</span>
+            </div>
+            <div class="stock-item">
+              <span class="emoji">🥚</span>
+              <div class="info">
+                <div class="name">계란</div>
+                <div class="qty">10개</div>
+              </div>
+              <span class="dday-badge dday-safe">D-7</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fab" onclick="showScreen('screen-scan')">
+        📷 영수증 스캔
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item active">
+          <span class="icon">🏠</span>
+          <span class="label">홈</span>
+        </div>
+        <div class="nav-item" onclick="showScreen('screen-recipe')">
+          <span class="icon">🍳</span>
+          <span class="label">레시피</span>
+        </div>
+        <div class="nav-item" onclick="showScreen('screen-meal')">
+          <span class="icon">📷</span>
+          <span class="label">기록</span>
+        </div>
+        <div class="nav-item">
+          <span class="icon">⚙️</span>
+          <span class="label">설정</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen: Scan -->
+    <div class="screen" id="screen-scan">
+      <div class="header">
+        <span class="header-back" onclick="showScreen('screen-home')">←</span>
+        <span class="header-title">영수증 스캔</span>
+        <span class="header-right"></span>
+      </div>
+      <div class="camera-area">
+        <div class="camera-frame">
+          <span class="icon">📄</span>
+          <span>영수증을 촬영하세요</span>
+        </div>
+        <p class="camera-hint">영수증이 잘 보이도록 맞춰주세요</p>
+      </div>
+      <div class="scan-buttons">
+        <button class="scan-btn secondary">
+          🖼️ 갤러리
+        </button>
+        <button class="scan-btn primary" onclick="showScreen('screen-result')">
+          📸 촬영
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen: Scan Result -->
+    <div class="screen" id="screen-result">
+      <div class="header">
+        <span class="header-back" onclick="showScreen('screen-scan')">←</span>
+        <span class="header-title">스캔 결과</span>
+        <span class="header-right"></span>
+      </div>
+      <div class="content">
+        <div class="result-header">
+          <div class="store">🏪 이마트 역삼점</div>
+          <div class="date">📅 2024.01.15</div>
+        </div>
+
+        <div class="result-list">
+          <div class="result-item">
+            <span class="emoji">🥛</span>
+            <div class="info">
+              <div class="name">서울우유 1L</div>
+              <div class="detail">1개 · ₩3,500</div>
+            </div>
+            <span class="expiry-btn">유통기한</span>
+          </div>
+          <div class="result-item">
+            <span class="emoji">🥬</span>
+            <div class="info">
+              <div class="name">상추</div>
+              <div class="detail">2봉 · ₩2,000</div>
+            </div>
+            <span class="expiry-btn">유통기한</span>
+          </div>
+          <div class="result-item">
+            <span class="emoji">🍖</span>
+            <div class="info">
+              <div class="name">삼겹살 500g</div>
+              <div class="detail">1팩 · ₩12,000</div>
+            </div>
+            <span class="expiry-btn">유통기한</span>
+          </div>
+          <div class="result-item">
+            <span class="emoji">🥚</span>
+            <div class="info">
+              <div class="name">계란 30구</div>
+              <div class="detail">1판 · ₩7,500</div>
+            </div>
+            <span class="expiry-btn">유통기한</span>
+          </div>
+        </div>
+
+        <button class="add-item-btn">+ 항목 추가</button>
+        <button class="submit-btn" onclick="showScreen('screen-home')">✅ 재고에 추가하기</button>
+      </div>
+    </div>
+
+    <!-- Screen: Recipe -->
+    <div class="screen" id="screen-recipe">
+      <div class="header" style="background: var(--white);">
+        <span class="header-title" style="flex: 1;">🍳 레시피 추천</span>
+        <span style="font-size: 20px; cursor: pointer;">🔍</span>
+      </div>
+      <div class="content">
+        <div class="filter-tabs">
+          <div class="filter-tab active">전체</div>
+          <div class="filter-tab">한식</div>
+          <div class="filter-tab">양식</div>
+          <div class="filter-tab">간편</div>
+          <div class="filter-tab">다이어트</div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span class="section-title">🎯 지금 만들 수 있어요!</span>
+          </div>
+
+          <div class="recipe-card">
+            <div class="recipe-img">🍲</div>
+            <div class="recipe-info">
+              <div class="recipe-name">삼겹살 김치찌개</div>
+              <div class="recipe-meta">
+                <span>⏱️ 30분</span>
+                <span>🔥 450kcal</span>
+              </div>
+              <div class="recipe-ingredients">
+                재료: <span class="available">삼겹살 ✓</span>, <span class="available">김치 ✓</span>, <span class="available">두부 ✓</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="recipe-card">
+            <div class="recipe-img" style="background: linear-gradient(135deg, #FFE066, #FFC078);">🍳</div>
+            <div class="recipe-info">
+              <div class="recipe-name">계란말이</div>
+              <div class="recipe-meta">
+                <span>⏱️ 15분</span>
+                <span>🔥 200kcal</span>
+              </div>
+              <div class="recipe-ingredients">
+                재료: <span class="available">계란 ✓</span>, <span class="available">파 ✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span class="section-title">🛒 조금만 사면 만들 수 있어요</span>
+          </div>
+
+          <div class="recipe-card">
+            <div class="recipe-img" style="background: linear-gradient(135deg, #FFA94D, #FF6B6B);">🍚</div>
+            <div class="recipe-info">
+              <div class="recipe-name">오므라이스</div>
+              <div class="recipe-meta">
+                <span>⏱️ 25분</span>
+                <span>🔥 380kcal</span>
+              </div>
+              <div class="recipe-ingredients">
+                재료: <span class="available">계란 ✓</span>, <span class="available">밥 ✓</span>, <span style="color: var(--danger);">케첩 ✗</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="showScreen('screen-home')">
+          <span class="icon">🏠</span>
+          <span class="label">홈</span>
+        </div>
+        <div class="nav-item active">
+          <span class="icon">🍳</span>
+          <span class="label">레시피</span>
+        </div>
+        <div class="nav-item" onclick="showScreen('screen-meal')">
+          <span class="icon">📷</span>
+          <span class="label">기록</span>
+        </div>
+        <div class="nav-item">
+          <span class="icon">⚙️</span>
+          <span class="label">설정</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen: Meal Record -->
+    <div class="screen" id="screen-meal">
+      <div class="header">
+        <span class="header-back" onclick="showScreen('screen-home')">←</span>
+        <span class="header-title">식사 기록</span>
+        <span class="header-right"></span>
+      </div>
+      <div class="content">
+        <div class="photo-area">
+          <span class="icon">📷</span>
+          <span class="text">사진을 추가하세요</span>
+        </div>
+
+        <div class="scan-buttons" style="padding: 0; margin-bottom: 20px;">
+          <button class="scan-btn secondary">🖼️ 갤러리</button>
+          <button class="scan-btn primary">📸 촬영</button>
+        </div>
+
+        <div class="meal-type-section">
+          <div class="label">🍽️ 식사 종류</div>
+          <div class="meal-types">
+            <div class="meal-type">아침</div>
+            <div class="meal-type">점심</div>
+            <div class="meal-type active">저녁</div>
+            <div class="meal-type">간식</div>
+          </div>
+        </div>
+
+        <div class="memo-section">
+          <div class="label" style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">📝 메모 (선택)</div>
+          <textarea class="memo-input" rows="3" placeholder="오늘 저녁은 삼겹살 파티!"></textarea>
+        </div>
+
+        <button class="submit-btn">🤖 AI 분석하기</button>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="showScreen('screen-home')">
+          <span class="icon">🏠</span>
+          <span class="label">홈</span>
+        </div>
+        <div class="nav-item" onclick="showScreen('screen-recipe')">
+          <span class="icon">🍳</span>
+          <span class="label">레시피</span>
+        </div>
+        <div class="nav-item active">
+          <span class="icon">📷</span>
+          <span class="label">기록</span>
+        </div>
+        <div class="nav-item">
+          <span class="icon">⚙️</span>
+          <span class="label">설정</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-hint">
+    💡 화면을 클릭해서 이동해보세요
+  </div>
+
+  <script>
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    // Filter tab interaction
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+
+    // Meal type interaction
+    document.querySelectorAll('.meal-type').forEach(type => {
+      type.addEventListener('click', () => {
+        document.querySelectorAll('.meal-type').forEach(t => t.classList.remove('active'));
+        type.classList.add('active');
+      });
+    });
+
+    // Hide hint after 5 seconds
+    setTimeout(() => {
+      document.querySelector('.nav-hint').style.opacity = '0';
+      document.querySelector('.nav-hint').style.transition = 'opacity 0.5s';
+    }, 5000);
+  </script>
+</body>
+</html>
