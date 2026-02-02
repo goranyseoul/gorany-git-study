@@ -1,0 +1,294 @@
+// Prisma schema for 냉장고 재고 관리 앱
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== User & Auth ====================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String?
+  name          String
+  profileImage  String?
+  provider      String?   // kakao, google, apple
+  providerId    String?
+  isSupporter   Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  preference     UserPreference?
+  familyMembers  FamilyMember[]
+  inventoryItems InventoryItem[]
+  meals          Meal[]
+  posts          Post[]
+  shorts         Shorts[]
+  comments       Comment[]
+  likes          Like[]
+  notifications  Notification[]
+
+  @@index([provider, providerId])
+}
+
+model UserPreference {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  height         Float?
+  weight         Float?
+  age            Int?
+  gender         String?  // male, female
+  activityLevel  String?  // low, medium, high
+  dietTypes      String[] // diabetes, keto, vegan, etc.
+  allergies      String[]
+  dislikedFoods  String[]
+  favoriteFoods  String[]
+  targetCalories Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==================== Family ====================
+
+model Family {
+  id          String   @id @default(uuid())
+  name        String
+  inviteCode  String   @unique
+  ownerId     String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  members        FamilyMember[]
+  inventoryItems InventoryItem[]
+}
+
+model FamilyMember {
+  id        String   @id @default(uuid())
+  familyId  String
+  userId    String
+  role      String   @default("member") // owner, member
+  joinedAt  DateTime @default(now())
+
+  // Relations
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([familyId, userId])
+}
+
+// ==================== Inventory ====================
+
+model InventoryItem {
+  id              String    @id @default(uuid())
+  userId          String
+  familyId        String?
+  name            String
+  category        String
+  quantity        Float
+  unit            String
+  purchaseDate    DateTime?
+  expiryDate      DateTime?
+  price           Int?
+  storageLocation String?   // refrigerator, freezer, room
+  imageUrl        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family Family? @relation(fields: [familyId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([familyId])
+  @@index([expiryDate])
+}
+
+// ==================== Recipe ====================
+
+model Recipe {
+  id           String   @id @default(uuid())
+  title        String
+  description  String?
+  imageUrl     String?
+  cookingTime  Int?     // minutes
+  difficulty   String?  // easy, medium, hard
+  servings     Int?
+  tags         String[]
+  dietTypes    String[]
+  nutrition    Json?    // { calories, protein, carbs, fat }
+  viewCount    Int      @default(0)
+  rating       Float?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  ingredients  RecipeIngredient[]
+  meals        Meal[]
+  posts        Post[]
+  shorts       Shorts[]
+}
+
+model RecipeIngredient {
+  id         String  @id @default(uuid())
+  recipeId   String
+  name       String
+  amount     Float
+  unit       String
+  isRequired Boolean @default(true)
+
+  // Relations
+  recipe      Recipe                 @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  substitutes SubstituteIngredient[]
+}
+
+model SubstituteIngredient {
+  id                   String @id @default(uuid())
+  recipeIngredientId   String
+  originalName         String
+  substituteName       String
+  reason               String
+  nutritionDiff        Json?  // { calories, protein, carbs, fat } differences
+
+  // Relations
+  recipeIngredient RecipeIngredient @relation(fields: [recipeIngredientId], references: [id], onDelete: Cascade)
+}
+
+// ==================== Meal ====================
+
+model Meal {
+  id        String   @id @default(uuid())
+  userId    String
+  recipeId  String?
+  type      String   // breakfast, lunch, dinner, snack
+  imageUrl  String?
+  nutrition Json?    // AI analyzed nutrition
+  memo      String?
+  mealTime  DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe   Recipe?       @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  feedback MealFeedback?
+
+  @@index([userId, mealTime])
+}
+
+model MealFeedback {
+  id              String   @id @default(uuid())
+  mealId          String   @unique
+  tasteRating     Int      // 1-5
+  portionFeedback String?  // too_little, just_right, too_much
+  comment         String?
+  createdAt       DateTime @default(now())
+
+  // Relations
+  meal Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
+}
+
+// ==================== Community ====================
+
+model Post {
+  id           String   @id @default(uuid())
+  userId       String
+  content      String
+  imageUrls    String[]
+  recipeId     String?
+  likeCount    Int      @default(0)
+  commentCount Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe   Recipe?   @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  comments Comment[]
+  likes    Like[]
+
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Shorts {
+  id           String   @id @default(uuid())
+  userId       String
+  title        String
+  videoUrl     String
+  thumbnailUrl String
+  recipeId     String?
+  viewCount    Int      @default(0)
+  likeCount    Int      @default(0)
+  commentCount Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe   Recipe?   @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  comments Comment[]
+  likes    Like[]
+
+  @@index([createdAt(sort: Desc)])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String?
+  shortsId  String?
+  parentId  String?
+  content   String
+  likeCount Int      @default(0)
+  createdAt DateTime @default(now())
+
+  // Relations
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  shorts  Shorts?   @relation(fields: [shortsId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+  likes   Like[]
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String?
+  shortsId  String?
+  commentId String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  shorts  Shorts?  @relation(fields: [shortsId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, shortsId])
+  @@unique([userId, commentId])
+}
+
+// ==================== Notification ====================
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // expiry_warning, recipe_recommend, community, etc.
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
