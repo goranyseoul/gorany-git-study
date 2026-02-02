@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>냉장고 재고 관리 앱 - 프로토타입</title>
+  <title>냉장고 재고 관리 앱 - 프로토타입 v2</title>
   <link href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
   <style>
     :root {
@@ -19,11 +19,7 @@
       --white: #FFFFFF;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Pretendard', -apple-system, sans-serif;
@@ -52,13 +48,11 @@
       animation: fadeIn 0.3s ease;
     }
 
-    .screen.active {
-      display: flex;
-    }
+    .screen.active { display: flex; }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     /* Header */
@@ -70,22 +64,10 @@
       align-items: center;
     }
 
-    .header-back {
-      padding: 8px;
-      cursor: pointer;
-      font-size: 20px;
-    }
+    .header-back { padding: 8px; cursor: pointer; font-size: 20px; }
+    .header-title { font-size: 18px; font-weight: 600; }
+    .header-right { width: 36px; }
 
-    .header-title {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .header-right {
-      width: 36px;
-    }
-
-    /* Home Header */
     .home-header {
       padding: 60px 20px 16px;
       background: var(--primary);
@@ -116,12 +98,13 @@
       padding: 16px;
     }
 
-    /* Summary Cards */
-    .summary-row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
+    .content-full {
+      flex: 1;
+      overflow-y: auto;
     }
+
+    /* Cards & Lists */
+    .summary-row { display: flex; gap: 12px; margin-bottom: 20px; }
 
     .summary-card {
       flex: 1;
@@ -131,21 +114,10 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
 
-    .summary-card .label {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 4px;
-    }
+    .summary-card .label { font-size: 14px; color: var(--text-secondary); margin-bottom: 4px; }
+    .summary-card .value { font-size: 24px; font-weight: 700; }
 
-    .summary-card .value {
-      font-size: 24px;
-      font-weight: 700;
-    }
-
-    /* Section */
-    .section {
-      margin-bottom: 24px;
-    }
+    .section { margin-bottom: 24px; }
 
     .section-header {
       display: flex;
@@ -162,14 +134,8 @@
       gap: 6px;
     }
 
-    .section-more {
-      font-size: 14px;
-      color: var(--text-secondary);
-      cursor: pointer;
-    }
-
-    /* Expiring Carousel */
-    .expiring-carousel {
+    /* Carousel */
+    .carousel {
       display: flex;
       gap: 12px;
       overflow-x: auto;
@@ -179,11 +145,9 @@
       padding-right: 16px;
     }
 
-    .expiring-carousel::-webkit-scrollbar {
-      display: none;
-    }
+    .carousel::-webkit-scrollbar { display: none; }
 
-    .expiring-item {
+    .carousel-item {
       min-width: 100px;
       background: var(--white);
       border-radius: 16px;
@@ -192,18 +156,10 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
 
-    .expiring-item .emoji {
-      font-size: 32px;
-      margin-bottom: 8px;
-    }
+    .carousel-item .emoji { font-size: 32px; margin-bottom: 8px; }
+    .carousel-item .name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
 
-    .expiring-item .name {
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 4px;
-    }
-
-    .expiring-item .dday {
+    .dday {
       font-size: 12px;
       font-weight: 600;
       padding: 4px 8px;
@@ -230,34 +186,14 @@
       cursor: pointer;
     }
 
-    .stock-item:last-child {
-      border-bottom: none;
-    }
+    .stock-item:last-child { border-bottom: none; }
+    .stock-item:active { background: var(--surface); }
+    .stock-item .emoji { font-size: 24px; margin-right: 12px; }
+    .stock-item .info { flex: 1; }
+    .stock-item .name { font-size: 15px; font-weight: 500; }
+    .stock-item .qty { font-size: 13px; color: var(--text-secondary); }
 
-    .stock-item:active {
-      background: var(--surface);
-    }
-
-    .stock-item .emoji {
-      font-size: 24px;
-      margin-right: 12px;
-    }
-
-    .stock-item .info {
-      flex: 1;
-    }
-
-    .stock-item .name {
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    .stock-item .qty {
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    .stock-item .dday-badge {
+    .dday-badge {
       font-size: 12px;
       font-weight: 600;
       padding: 4px 10px;
@@ -281,15 +217,9 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .fab:hover {
-      transform: translateX(-50%) scale(1.05);
-      box-shadow: 0 6px 16px rgba(255,212,59,0.5);
-    }
-
-    /* Bottom Nav */
+    /* Bottom Nav - 5 tabs */
     .bottom-nav {
       display: flex;
       background: var(--white);
@@ -302,192 +232,156 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 8px;
+      padding: 8px 4px;
       cursor: pointer;
       color: var(--text-secondary);
       transition: color 0.2s;
     }
 
-    .nav-item.active {
-      color: var(--primary-dark);
-    }
+    .nav-item.active { color: var(--primary-dark); }
+    .nav-item .icon { font-size: 22px; margin-bottom: 4px; }
+    .nav-item .label { font-size: 10px; font-weight: 500; }
 
-    .nav-item .icon {
-      font-size: 24px;
-      margin-bottom: 4px;
-    }
-
-    .nav-item .label {
-      font-size: 11px;
-      font-weight: 500;
-    }
-
-    /* Scan Screen */
-    .camera-area {
-      flex: 1;
-      background: #000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      position: relative;
-    }
-
-    .camera-frame {
-      width: 280px;
-      height: 380px;
-      border: 3px dashed rgba(255,255,255,0.5);
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .camera-frame .icon {
-      font-size: 48px;
-    }
-
-    .camera-hint {
-      font-size: 14px;
-      color: rgba(255,255,255,0.7);
-      margin-top: 20px;
-    }
-
-    .scan-buttons {
-      display: flex;
-      gap: 16px;
-      padding: 24px;
-      background: var(--white);
-    }
-
-    .scan-btn {
-      flex: 1;
+    /* Buttons */
+    .btn {
       padding: 16px;
-      border-radius: 16px;
-      font-size: 15px;
+      border-radius: 12px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      border: none;
+      width: 100%;
       transition: transform 0.2s;
     }
 
-    .scan-btn:active {
-      transform: scale(0.98);
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--primary); color: var(--text); }
+    .btn-secondary { background: var(--surface); color: var(--text); }
+
+    /* Onboarding */
+    .onboarding-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 60px 24px 24px;
     }
 
-    .scan-btn.secondary {
-      background: var(--surface);
-      color: var(--text);
+    .onboarding-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
     }
 
-    .scan-btn.primary {
+    .onboarding-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+
+    .food-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .food-item {
+      aspect-ratio: 1;
+      background: var(--white);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .food-item.selected {
+      border-color: var(--primary);
+      background: #FFFBEB;
+    }
+
+    .food-item .emoji { font-size: 28px; margin-bottom: 4px; }
+    .food-item .name { font-size: 11px; font-weight: 500; }
+
+    .food-item .check {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
       background: var(--primary);
-      color: var(--text);
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
     }
 
-    /* Scan Result */
-    .result-header {
-      background: var(--surface);
-      padding: 16px;
-      border-radius: 12px;
+    .food-item.selected .check { display: flex; }
+
+    .selection-counter {
+      text-align: center;
+      font-size: 15px;
+      color: var(--text-secondary);
       margin-bottom: 16px;
     }
 
-    .result-header .store {
-      font-size: 16px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .selection-counter span { color: var(--primary-dark); font-weight: 600; }
 
-    .result-header .date {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-    }
-
-    .result-list {
+    /* Recipe Card */
+    .recipe-card {
       background: var(--white);
       border-radius: 16px;
       overflow: hidden;
       margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      cursor: pointer;
     }
 
-    .result-item {
+    .recipe-img {
+      height: 140px;
+      background: linear-gradient(135deg, #FFE066, #FF922B);
       display: flex;
       align-items: center;
-      padding: 16px;
-      border-bottom: 1px solid var(--border);
+      justify-content: center;
+      font-size: 56px;
     }
 
-    .result-item:last-child {
-      border-bottom: none;
-    }
+    .recipe-info { padding: 16px; }
+    .recipe-name { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
 
-    .result-item .emoji {
-      font-size: 24px;
-      margin-right: 12px;
-    }
-
-    .result-item .info {
-      flex: 1;
-    }
-
-    .result-item .name {
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    .result-item .detail {
+    .recipe-meta {
+      display: flex;
+      gap: 16px;
       font-size: 13px;
       color: var(--text-secondary);
+      margin-bottom: 8px;
     }
 
-    .result-item .expiry-btn {
-      font-size: 13px;
+    .recipe-badges {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #E7F5FF;
+      color: #1971C2;
+    }
+
+    .badge-personal {
+      background: #FFF3BF;
       color: var(--primary-dark);
-      background: var(--surface);
-      padding: 6px 12px;
-      border-radius: 8px;
-      cursor: pointer;
     }
 
-    .add-item-btn {
-      width: 100%;
-      padding: 14px;
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      color: var(--text-secondary);
-      font-size: 14px;
-      cursor: pointer;
-      margin-bottom: 16px;
-      background: transparent;
-    }
-
-    .submit-btn {
-      width: 100%;
-      padding: 16px;
-      background: var(--primary);
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .submit-btn:active {
-      transform: scale(0.98);
-    }
-
-    /* Recipe Screen */
+    /* Filter Tabs */
     .filter-tabs {
       display: flex;
       gap: 8px;
@@ -505,7 +399,6 @@
       cursor: pointer;
       background: var(--surface);
       color: var(--text-secondary);
-      transition: all 0.2s;
     }
 
     .filter-tab.active {
@@ -513,132 +406,288 @@
       color: var(--text);
     }
 
-    .recipe-card {
+    /* Lounge Post */
+    .post-card {
+      background: var(--white);
+      border-radius: 16px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      gap: 12px;
+    }
+
+    .post-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .post-user { flex: 1; }
+    .post-username { font-size: 14px; font-weight: 600; }
+    .post-time { font-size: 12px; color: var(--text-secondary); }
+
+    .supporter-badge {
+      font-size: 10px;
+      background: var(--primary);
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .post-image {
+      width: 100%;
+      height: 280px;
+      background: linear-gradient(135deg, #FFA94D, #FF6B6B);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+    }
+
+    .post-content { padding: 16px; }
+    .post-text { font-size: 14px; line-height: 1.5; margin-bottom: 8px; }
+
+    .post-tag {
+      font-size: 13px;
+      color: #1971C2;
+      margin-bottom: 12px;
+    }
+
+    .post-actions {
+      display: flex;
+      gap: 20px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .post-actions span { cursor: pointer; }
+
+    /* Shorts */
+    .shorts-screen {
+      background: #000;
+      position: relative;
+    }
+
+    .shorts-video {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .shorts-video .emoji { font-size: 100px; }
+
+    .shorts-actions {
+      position: absolute;
+      right: 16px;
+      bottom: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .shorts-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .shorts-action .icon { font-size: 28px; margin-bottom: 4px; }
+
+    .shorts-info {
+      position: absolute;
+      bottom: 100px;
+      left: 16px;
+      right: 80px;
+      color: white;
+    }
+
+    .shorts-creator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .shorts-creator-name { font-weight: 600; }
+
+    .shorts-follow {
+      background: var(--danger);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .shorts-desc { font-size: 14px; margin-bottom: 8px; }
+
+    .shorts-recipe-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,0.2);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    /* Feedback Modal */
+    .feedback-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      justify-content: center;
+    }
+
+    .feedback-title {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .feedback-subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+
+    .feedback-section {
+      margin-bottom: 32px;
+    }
+
+    .feedback-label {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .feedback-options {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .feedback-option {
+      flex: 1;
+      max-width: 100px;
+      padding: 16px 12px;
+      border-radius: 16px;
+      background: var(--surface);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .feedback-option.selected {
+      background: var(--primary);
+    }
+
+    .feedback-option .emoji { font-size: 32px; margin-bottom: 8px; }
+    .feedback-option .text { font-size: 12px; }
+
+    .skip-link {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-top: 16px;
+      cursor: pointer;
+    }
+
+    /* Customize Recipe */
+    .diet-badge-large {
+      background: #FFF3BF;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    .diet-badge-large .title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .diet-badge-large .desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .nutrition-box {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .nutrition-row {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .nutrition-item .value { font-size: 18px; font-weight: 700; }
+    .nutrition-item .label { font-size: 12px; color: var(--text-secondary); }
+
+    .nutrition-change {
+      text-align: center;
+      font-size: 12px;
+      color: var(--secondary);
+    }
+
+    .substitute-list {
       background: var(--white);
       border-radius: 16px;
       overflow: hidden;
       margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      cursor: pointer;
-      transition: transform 0.2s;
     }
 
-    .recipe-card:active {
-      transform: scale(0.98);
-    }
-
-    .recipe-img {
-      height: 160px;
-      background: linear-gradient(135deg, #FFE066, #FF922B);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 64px;
-    }
-
-    .recipe-info {
+    .substitute-item {
       padding: 16px;
+      border-bottom: 1px solid var(--border);
     }
 
-    .recipe-name {
-      font-size: 17px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
+    .substitute-item:last-child { border-bottom: none; }
 
-    .recipe-meta {
-      display: flex;
-      gap: 16px;
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
-    }
-
-    .recipe-ingredients {
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    .recipe-ingredients .available {
-      color: var(--secondary);
-    }
-
-    /* Meal Record Screen */
-    .photo-area {
-      background: var(--surface);
-      border-radius: 16px;
-      height: 200px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-      cursor: pointer;
-    }
-
-    .photo-area .icon {
-      font-size: 48px;
-      margin-bottom: 8px;
-    }
-
-    .photo-area .text {
-      color: var(--text-secondary);
+    .substitute-original {
       font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
     }
 
-    .meal-type-section {
-      margin-bottom: 20px;
-    }
-
-    .meal-type-section .label {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 12px;
+    .substitute-new {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .meal-types {
-      display: flex;
-      gap: 10px;
-    }
-
-    .meal-type {
-      flex: 1;
-      padding: 12px;
-      border-radius: 12px;
-      text-align: center;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      background: var(--surface);
-      color: var(--text-secondary);
-      transition: all 0.2s;
-    }
-
-    .meal-type.active {
-      background: var(--primary);
-      color: var(--text);
-    }
-
-    .memo-section {
-      margin-bottom: 20px;
-    }
-
-    .memo-input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      font-size: 15px;
-      font-family: inherit;
-      resize: none;
-    }
-
-    .memo-input:focus {
-      outline: none;
-      border-color: var(--primary);
+    .substitute-badge {
+      background: #FFF3BF;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
     }
 
     /* Navigation hint */
@@ -652,13 +701,45 @@
       padding: 10px 20px;
       border-radius: 20px;
       font-size: 13px;
+      z-index: 100;
     }
   </style>
 </head>
 <body>
   <div class="phone-frame">
+
+    <!-- Screen: Onboarding - 취향 선택 -->
+    <div class="screen active" id="screen-onboarding">
+      <div class="onboarding-content">
+        <div style="text-align: right; margin-bottom: 20px;">
+          <span style="color: var(--text-secondary); cursor: pointer;" onclick="showScreen('screen-home')">건너뛰기</span>
+        </div>
+        <div class="onboarding-title">🍽️ 좋아하는 음식을<br>5개 골라주세요</div>
+        <div class="onboarding-subtitle">맞춤 레시피 추천에 활용돼요</div>
+
+        <div class="food-grid" id="foodGrid">
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🍲</span><span class="name">김치찌개</span></div>
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🍝</span><span class="name">파스타</span></div>
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🥗</span><span class="name">샐러드</span></div>
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🍖</span><span class="name">스테이크</span></div>
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🍜</span><span class="name">라멘</span></div>
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🍣</span><span class="name">초밥</span></div>
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🍕</span><span class="name">피자</span></div>
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🥘</span><span class="name">카레</span></div>
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🥪</span><span class="name">샌드위치</span></div>
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🍛</span><span class="name">덮밥</span></div>
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🌮</span><span class="name">타코</span></div>
+          <div class="food-item" onclick="toggleFood(this)"><span class="emoji">🍱</span><span class="name">도시락</span></div>
+        </div>
+
+        <div class="selection-counter">선택: <span id="selectionCount">0</span>/5</div>
+
+        <button class="btn btn-primary" onclick="showScreen('screen-home')">시작하기 →</button>
+      </div>
+    </div>
+
     <!-- Screen: Home -->
-    <div class="screen active" id="screen-home">
+    <div class="screen" id="screen-home">
       <div class="home-header">
         <h1>🧊 우리집 냉장고</h1>
         <span class="family-badge">👨‍👩‍👧 김씨네</span>
@@ -679,185 +760,49 @@
           <div class="section-header">
             <span class="section-title">⚠️ 유통기한 임박</span>
           </div>
-          <div class="expiring-carousel">
-            <div class="expiring-item">
-              <div class="emoji">🥛</div>
-              <div class="name">우유</div>
-              <div class="dday dday-danger">D-1</div>
-            </div>
-            <div class="expiring-item">
-              <div class="emoji">🥬</div>
-              <div class="name">상추</div>
-              <div class="dday dday-warning">D-2</div>
-            </div>
-            <div class="expiring-item">
-              <div class="emoji">🍖</div>
-              <div class="name">삼겹살</div>
-              <div class="dday dday-warning">D-3</div>
-            </div>
-            <div class="expiring-item">
-              <div class="emoji">🧀</div>
-              <div class="name">치즈</div>
-              <div class="dday dday-safe">D-5</div>
-            </div>
+          <div class="carousel">
+            <div class="carousel-item"><div class="emoji">🥛</div><div class="name">우유</div><div class="dday dday-danger">D-1</div></div>
+            <div class="carousel-item"><div class="emoji">🥬</div><div class="name">상추</div><div class="dday dday-warning">D-2</div></div>
+            <div class="carousel-item"><div class="emoji">🍖</div><div class="name">삼겹살</div><div class="dday dday-warning">D-3</div></div>
+            <div class="carousel-item"><div class="emoji">🧀</div><div class="name">치즈</div><div class="dday dday-safe">D-5</div></div>
           </div>
         </div>
 
         <div class="section">
           <div class="section-header">
             <span class="section-title">📦 전체 재고</span>
-            <span class="section-more">모두보기 ›</span>
+            <span style="font-size: 14px; color: var(--text-secondary);">모두보기 ›</span>
           </div>
           <div class="stock-list">
-            <div class="stock-item">
-              <span class="emoji">🥛</span>
-              <div class="info">
-                <div class="name">서울우유 1L</div>
-                <div class="qty">1개</div>
-              </div>
-              <span class="dday-badge dday-danger">D-1</span>
-            </div>
-            <div class="stock-item">
-              <span class="emoji">🥬</span>
-              <div class="info">
-                <div class="name">상추</div>
-                <div class="qty">2봉</div>
-              </div>
-              <span class="dday-badge dday-warning">D-2</span>
-            </div>
-            <div class="stock-item">
-              <span class="emoji">🍖</span>
-              <div class="info">
-                <div class="name">삼겹살</div>
-                <div class="qty">500g</div>
-              </div>
-              <span class="dday-badge dday-warning">D-3</span>
-            </div>
-            <div class="stock-item">
-              <span class="emoji">🥚</span>
-              <div class="info">
-                <div class="name">계란</div>
-                <div class="qty">10개</div>
-              </div>
-              <span class="dday-badge dday-safe">D-7</span>
-            </div>
+            <div class="stock-item"><span class="emoji">🥛</span><div class="info"><div class="name">서울우유 1L</div><div class="qty">1개</div></div><span class="dday-badge dday-danger">D-1</span></div>
+            <div class="stock-item"><span class="emoji">🥬</span><div class="info"><div class="name">상추</div><div class="qty">2봉</div></div><span class="dday-badge dday-warning">D-2</span></div>
+            <div class="stock-item"><span class="emoji">🍖</span><div class="info"><div class="name">삼겹살</div><div class="qty">500g</div></div><span class="dday-badge dday-warning">D-3</span></div>
+            <div class="stock-item"><span class="emoji">🥚</span><div class="info"><div class="name">계란</div><div class="qty">10개</div></div><span class="dday-badge dday-safe">D-7</span></div>
           </div>
         </div>
       </div>
-
-      <div class="fab" onclick="showScreen('screen-scan')">
-        📷 영수증 스캔
-      </div>
-
-      <div class="bottom-nav">
-        <div class="nav-item active">
-          <span class="icon">🏠</span>
-          <span class="label">홈</span>
-        </div>
-        <div class="nav-item" onclick="showScreen('screen-recipe')">
-          <span class="icon">🍳</span>
-          <span class="label">레시피</span>
-        </div>
-        <div class="nav-item" onclick="showScreen('screen-meal')">
-          <span class="icon">📷</span>
-          <span class="label">기록</span>
-        </div>
-        <div class="nav-item">
-          <span class="icon">⚙️</span>
-          <span class="label">설정</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Screen: Scan -->
-    <div class="screen" id="screen-scan">
-      <div class="header">
-        <span class="header-back" onclick="showScreen('screen-home')">←</span>
-        <span class="header-title">영수증 스캔</span>
-        <span class="header-right"></span>
-      </div>
-      <div class="camera-area">
-        <div class="camera-frame">
-          <span class="icon">📄</span>
-          <span>영수증을 촬영하세요</span>
-        </div>
-        <p class="camera-hint">영수증이 잘 보이도록 맞춰주세요</p>
-      </div>
-      <div class="scan-buttons">
-        <button class="scan-btn secondary">
-          🖼️ 갤러리
-        </button>
-        <button class="scan-btn primary" onclick="showScreen('screen-result')">
-          📸 촬영
-        </button>
-      </div>
-    </div>
-
-    <!-- Screen: Scan Result -->
-    <div class="screen" id="screen-result">
-      <div class="header">
-        <span class="header-back" onclick="showScreen('screen-scan')">←</span>
-        <span class="header-title">스캔 결과</span>
-        <span class="header-right"></span>
-      </div>
-      <div class="content">
-        <div class="result-header">
-          <div class="store">🏪 이마트 역삼점</div>
-          <div class="date">📅 2024.01.15</div>
-        </div>
-
-        <div class="result-list">
-          <div class="result-item">
-            <span class="emoji">🥛</span>
-            <div class="info">
-              <div class="name">서울우유 1L</div>
-              <div class="detail">1개 · ₩3,500</div>
-            </div>
-            <span class="expiry-btn">유통기한</span>
-          </div>
-          <div class="result-item">
-            <span class="emoji">🥬</span>
-            <div class="info">
-              <div class="name">상추</div>
-              <div class="detail">2봉 · ₩2,000</div>
-            </div>
-            <span class="expiry-btn">유통기한</span>
-          </div>
-          <div class="result-item">
-            <span class="emoji">🍖</span>
-            <div class="info">
-              <div class="name">삼겹살 500g</div>
-              <div class="detail">1팩 · ₩12,000</div>
-            </div>
-            <span class="expiry-btn">유통기한</span>
-          </div>
-          <div class="result-item">
-            <span class="emoji">🥚</span>
-            <div class="info">
-              <div class="name">계란 30구</div>
-              <div class="detail">1판 · ₩7,500</div>
-            </div>
-            <span class="expiry-btn">유통기한</span>
-          </div>
-        </div>
-
-        <button class="add-item-btn">+ 항목 추가</button>
-        <button class="submit-btn" onclick="showScreen('screen-home')">✅ 재고에 추가하기</button>
-      </div>
+      <div class="fab" onclick="showScreen('screen-recipe')">📷 영수증 스캔</div>
+      <nav class="bottom-nav">
+        <div class="nav-item active"><span class="icon">🏠</span><span class="label">홈</span></div>
+        <div class="nav-item" onclick="showScreen('screen-recipe')"><span class="icon">🍳</span><span class="label">레시피</span></div>
+        <div class="nav-item" onclick="showScreen('screen-shorts')"><span class="icon">🎬</span><span class="label">쇼츠</span></div>
+        <div class="nav-item" onclick="showScreen('screen-lounge')"><span class="icon">💬</span><span class="label">라운지</span></div>
+        <div class="nav-item"><span class="icon">👤</span><span class="label">MY</span></div>
+      </nav>
     </div>
 
     <!-- Screen: Recipe -->
     <div class="screen" id="screen-recipe">
       <div class="header" style="background: var(--white);">
         <span class="header-title" style="flex: 1;">🍳 레시피 추천</span>
-        <span style="font-size: 20px; cursor: pointer;">🔍</span>
+        <span style="font-size: 20px;">🔍</span>
       </div>
       <div class="content">
         <div class="filter-tabs">
           <div class="filter-tab active">전체</div>
+          <div class="filter-tab">✨ 내 맞춤</div>
           <div class="filter-tab">한식</div>
           <div class="filter-tab">양식</div>
-          <div class="filter-tab">간편</div>
           <div class="filter-tab">다이어트</div>
         </div>
 
@@ -866,16 +811,17 @@
             <span class="section-title">🎯 지금 만들 수 있어요!</span>
           </div>
 
-          <div class="recipe-card">
+          <div class="recipe-card" onclick="showScreen('screen-customize')">
             <div class="recipe-img">🍲</div>
             <div class="recipe-info">
+              <div class="recipe-badges">
+                <span class="badge badge-personal">🎯 당뇨 맞춤</span>
+                <span class="badge">재료 100%</span>
+              </div>
               <div class="recipe-name">삼겹살 김치찌개</div>
               <div class="recipe-meta">
                 <span>⏱️ 30분</span>
-                <span>🔥 450kcal</span>
-              </div>
-              <div class="recipe-ingredients">
-                재료: <span class="available">삼겹살 ✓</span>, <span class="available">김치 ✓</span>, <span class="available">두부 ✓</span>
+                <span>🔥 380kcal (맞춤)</span>
               </div>
             </div>
           </div>
@@ -883,119 +829,221 @@
           <div class="recipe-card">
             <div class="recipe-img" style="background: linear-gradient(135deg, #FFE066, #FFC078);">🍳</div>
             <div class="recipe-info">
+              <div class="recipe-badges">
+                <span class="badge">재료 100%</span>
+              </div>
               <div class="recipe-name">계란말이</div>
               <div class="recipe-meta">
                 <span>⏱️ 15분</span>
                 <span>🔥 200kcal</span>
               </div>
-              <div class="recipe-ingredients">
-                재료: <span class="available">계란 ✓</span>, <span class="available">파 ✓</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header">
-            <span class="section-title">🛒 조금만 사면 만들 수 있어요</span>
-          </div>
-
-          <div class="recipe-card">
-            <div class="recipe-img" style="background: linear-gradient(135deg, #FFA94D, #FF6B6B);">🍚</div>
-            <div class="recipe-info">
-              <div class="recipe-name">오므라이스</div>
-              <div class="recipe-meta">
-                <span>⏱️ 25분</span>
-                <span>🔥 380kcal</span>
-              </div>
-              <div class="recipe-ingredients">
-                재료: <span class="available">계란 ✓</span>, <span class="available">밥 ✓</span>, <span style="color: var(--danger);">케첩 ✗</span>
-              </div>
             </div>
           </div>
         </div>
       </div>
-
-      <div class="bottom-nav">
-        <div class="nav-item" onclick="showScreen('screen-home')">
-          <span class="icon">🏠</span>
-          <span class="label">홈</span>
-        </div>
-        <div class="nav-item active">
-          <span class="icon">🍳</span>
-          <span class="label">레시피</span>
-        </div>
-        <div class="nav-item" onclick="showScreen('screen-meal')">
-          <span class="icon">📷</span>
-          <span class="label">기록</span>
-        </div>
-        <div class="nav-item">
-          <span class="icon">⚙️</span>
-          <span class="label">설정</span>
-        </div>
-      </div>
+      <nav class="bottom-nav">
+        <div class="nav-item" onclick="showScreen('screen-home')"><span class="icon">🏠</span><span class="label">홈</span></div>
+        <div class="nav-item active"><span class="icon">🍳</span><span class="label">레시피</span></div>
+        <div class="nav-item" onclick="showScreen('screen-shorts')"><span class="icon">🎬</span><span class="label">쇼츠</span></div>
+        <div class="nav-item" onclick="showScreen('screen-lounge')"><span class="icon">💬</span><span class="label">라운지</span></div>
+        <div class="nav-item"><span class="icon">👤</span><span class="label">MY</span></div>
+      </nav>
     </div>
 
-    <!-- Screen: Meal Record -->
-    <div class="screen" id="screen-meal">
+    <!-- Screen: Customize Recipe -->
+    <div class="screen" id="screen-customize">
       <div class="header">
-        <span class="header-back" onclick="showScreen('screen-home')">←</span>
-        <span class="header-title">식사 기록</span>
+        <span class="header-back" onclick="showScreen('screen-recipe')">←</span>
+        <span class="header-title">맞춤 레시피</span>
         <span class="header-right"></span>
       </div>
       <div class="content">
-        <div class="photo-area">
-          <span class="icon">📷</span>
-          <span class="text">사진을 추가하세요</span>
+        <div class="diet-badge-large">
+          <div class="title">🏷️ 당뇨 맞춤</div>
+          <div class="desc">탄수화물 ↓ 30% | 당류 ↓ 80%</div>
         </div>
 
-        <div class="scan-buttons" style="padding: 0; margin-bottom: 20px;">
-          <button class="scan-btn secondary">🖼️ 갤러리</button>
-          <button class="scan-btn primary">📸 촬영</button>
+        <div class="section-title" style="margin-bottom: 12px;">📊 영양 정보 (1인분)</div>
+        <div class="nutrition-box">
+          <div class="nutrition-row">
+            <div class="nutrition-item"><div class="value">380</div><div class="label">칼로리</div></div>
+            <div class="nutrition-item"><div class="value">25g</div><div class="label">단백질</div></div>
+            <div class="nutrition-item"><div class="value">28g</div><div class="label">탄수화물</div></div>
+            <div class="nutrition-item"><div class="value">18g</div><div class="label">지방</div></div>
+          </div>
+          <div class="nutrition-change">원본 450kcal → 15% 감소 ✓</div>
         </div>
 
-        <div class="meal-type-section">
-          <div class="label">🍽️ 식사 종류</div>
-          <div class="meal-types">
-            <div class="meal-type">아침</div>
-            <div class="meal-type">점심</div>
-            <div class="meal-type active">저녁</div>
-            <div class="meal-type">간식</div>
+        <div class="section-title" style="margin-bottom: 12px;">🔄 대체 재료</div>
+        <div class="substitute-list">
+          <div class="substitute-item">
+            <div class="substitute-original">설탕 1스푼</div>
+            <div class="substitute-new">
+              <span>→</span>
+              <span class="substitute-badge">🟡 알룰로스 2스푼</span>
+              <span style="font-size: 12px; color: var(--text-secondary);">당뇨 맞춤</span>
+            </div>
+          </div>
+          <div class="substitute-item">
+            <div class="substitute-original">밥 1공기</div>
+            <div class="substitute-new">
+              <span>→</span>
+              <span class="substitute-badge">🟡 곤약밥 0.7공기</span>
+              <span style="font-size: 12px; color: var(--text-secondary);">탄수화물 ↓</span>
+            </div>
+          </div>
+          <div class="substitute-item">
+            <div class="substitute-original">일반 두부 1/2모</div>
+            <div class="substitute-new">
+              <span>→</span>
+              <span style="color: var(--secondary);">🟢 그대로 사용 OK</span>
+            </div>
           </div>
         </div>
 
-        <div class="memo-section">
-          <div class="label" style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">📝 메모 (선택)</div>
-          <textarea class="memo-input" rows="3" placeholder="오늘 저녁은 삼겹살 파티!"></textarea>
-        </div>
-
-        <button class="submit-btn">🤖 AI 분석하기</button>
-      </div>
-
-      <div class="bottom-nav">
-        <div class="nav-item" onclick="showScreen('screen-home')">
-          <span class="icon">🏠</span>
-          <span class="label">홈</span>
-        </div>
-        <div class="nav-item" onclick="showScreen('screen-recipe')">
-          <span class="icon">🍳</span>
-          <span class="label">레시피</span>
-        </div>
-        <div class="nav-item active">
-          <span class="icon">📷</span>
-          <span class="label">기록</span>
-        </div>
-        <div class="nav-item">
-          <span class="icon">⚙️</span>
-          <span class="label">설정</span>
-        </div>
+        <button class="btn btn-primary" onclick="showScreen('screen-feedback')">🍳 이 버전으로 요리 시작</button>
       </div>
     </div>
+
+    <!-- Screen: Feedback -->
+    <div class="screen" id="screen-feedback">
+      <div class="header">
+        <span class="header-right"></span>
+        <span class="header-title"></span>
+        <span class="header-back" onclick="showScreen('screen-home')" style="font-size: 24px;">✕</span>
+      </div>
+      <div class="feedback-content">
+        <div class="feedback-title">🎉 식사 기록 완료!</div>
+        <div class="feedback-subtitle">간단한 피드백을 남겨주세요<br>다음 추천이 더 정확해져요</div>
+
+        <div class="feedback-section">
+          <div class="feedback-label">맛은 어땠나요?</div>
+          <div class="feedback-options">
+            <div class="feedback-option" onclick="selectFeedback(this)"><div class="emoji">😋</div><div class="text">맛있어요</div></div>
+            <div class="feedback-option" onclick="selectFeedback(this)"><div class="emoji">😐</div><div class="text">보통이에요</div></div>
+            <div class="feedback-option" onclick="selectFeedback(this)"><div class="emoji">😕</div><div class="text">별로예요</div></div>
+          </div>
+        </div>
+
+        <div class="feedback-section">
+          <div class="feedback-label">양은 어땠나요?</div>
+          <div class="feedback-options">
+            <div class="feedback-option" onclick="selectFeedback(this)"><div class="emoji">🍽️</div><div class="text">많았어요</div></div>
+            <div class="feedback-option" onclick="selectFeedback(this)"><div class="emoji">✅</div><div class="text">딱 좋았어요</div></div>
+            <div class="feedback-option" onclick="selectFeedback(this)"><div class="emoji">🥄</div><div class="text">적었어요</div></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="showScreen('screen-home')">완료 →</button>
+        <div class="skip-link" onclick="showScreen('screen-home')">다음에 하기</div>
+      </div>
+    </div>
+
+    <!-- Screen: Lounge -->
+    <div class="screen" id="screen-lounge">
+      <div class="header" style="background: var(--white);">
+        <span class="header-title" style="flex: 1;">💬 라운지</span>
+        <span style="font-size: 20px;">🔔</span>
+      </div>
+      <div class="content-full">
+        <div style="padding: 16px;">
+          <div class="filter-tabs">
+            <div class="filter-tab active">전체</div>
+            <div class="filter-tab">🔥 인기</div>
+            <div class="filter-tab">최신</div>
+            <div class="filter-tab">팔로잉</div>
+          </div>
+        </div>
+
+        <div style="padding: 0 16px;">
+          <div class="post-card">
+            <div class="post-header">
+              <div class="post-avatar">👨‍🍳</div>
+              <div class="post-user">
+                <div class="post-username">요리왕김씨</div>
+                <div class="post-time">2시간 전</div>
+              </div>
+            </div>
+            <div class="post-image">🍲</div>
+            <div class="post-content">
+              <div class="post-text">오늘 저녁은 삼겹살 김치찌개! 🍲<br>역시 돼지고기는 김치랑 먹어야...</div>
+              <div class="post-tag">🏷️ #삼겹살김치찌개 #집밥</div>
+              <div class="post-actions">
+                <span>❤️ 234</span>
+                <span>💬 45</span>
+                <span>🔖 저장</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="post-card">
+            <div class="post-header">
+              <div class="post-avatar">👩‍🍳</div>
+              <div class="post-user">
+                <div class="post-username">헬스요리사</div>
+                <div class="post-time">5시간 전</div>
+              </div>
+              <span class="supporter-badge">🏅 서포터즈</span>
+            </div>
+            <div class="post-image" style="background: linear-gradient(135deg, #51CF66, #40C057);">🥗</div>
+            <div class="post-content">
+              <div class="post-text">고단백 닭가슴살 샐러드 🥗<br>단백질 40g, 탄수화물 15g!</div>
+              <div class="post-tag">🏷️ #다이어트 #고단백</div>
+              <div class="post-actions">
+                <span>❤️ 567</span>
+                <span>💬 89</span>
+                <span>🔖 저장</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fab" style="bottom: 100px;">✏️ 글쓰기</div>
+      <nav class="bottom-nav">
+        <div class="nav-item" onclick="showScreen('screen-home')"><span class="icon">🏠</span><span class="label">홈</span></div>
+        <div class="nav-item" onclick="showScreen('screen-recipe')"><span class="icon">🍳</span><span class="label">레시피</span></div>
+        <div class="nav-item" onclick="showScreen('screen-shorts')"><span class="icon">🎬</span><span class="label">쇼츠</span></div>
+        <div class="nav-item active"><span class="icon">💬</span><span class="label">라운지</span></div>
+        <div class="nav-item"><span class="icon">👤</span><span class="label">MY</span></div>
+      </nav>
+    </div>
+
+    <!-- Screen: Shorts -->
+    <div class="screen shorts-screen" id="screen-shorts">
+      <div class="shorts-video">
+        <div class="emoji">🍳</div>
+        <div>15초 계란말이 만들기</div>
+        <div style="font-size: 14px; color: rgba(255,255,255,0.7);">↑ 위로 스와이프: 다음 영상</div>
+      </div>
+
+      <div class="shorts-actions">
+        <div class="shorts-action"><span class="icon">❤️</span><span>1.2K</span></div>
+        <div class="shorts-action"><span class="icon">💬</span><span>89</span></div>
+        <div class="shorts-action"><span class="icon">🔖</span><span>저장</span></div>
+        <div class="shorts-action"><span class="icon">↗️</span><span>공유</span></div>
+      </div>
+
+      <div class="shorts-info">
+        <div class="shorts-creator">
+          <span class="shorts-creator-name">👨‍🍳 쿡스타그램</span>
+          <span class="shorts-follow">팔로우</span>
+        </div>
+        <div class="shorts-desc">계란말이 황금 비율 대공개! 🥚</div>
+        <span class="shorts-recipe-link" onclick="showScreen('screen-recipe')">🏷️ #계란말이 → 레시피 보기</span>
+      </div>
+
+      <nav class="bottom-nav">
+        <div class="nav-item" onclick="showScreen('screen-home')"><span class="icon">🏠</span><span class="label">홈</span></div>
+        <div class="nav-item" onclick="showScreen('screen-recipe')"><span class="icon">🍳</span><span class="label">레시피</span></div>
+        <div class="nav-item active"><span class="icon">🎬</span><span class="label">쇼츠</span></div>
+        <div class="nav-item" onclick="showScreen('screen-lounge')"><span class="icon">💬</span><span class="label">라운지</span></div>
+        <div class="nav-item"><span class="icon">👤</span><span class="label">MY</span></div>
+      </nav>
+    </div>
+
   </div>
 
-  <div class="nav-hint">
-    💡 화면을 클릭해서 이동해보세요
-  </div>
+  <div class="nav-hint">💡 화면을 클릭해서 이동해보세요</div>
 
   <script>
     function showScreen(screenId) {
@@ -1003,23 +1051,30 @@
       document.getElementById(screenId).classList.add('active');
     }
 
-    // Filter tab interaction
+    let selectedCount = 0;
+    function toggleFood(el) {
+      if (el.classList.contains('selected')) {
+        el.classList.remove('selected');
+        selectedCount--;
+      } else if (selectedCount < 5) {
+        el.classList.add('selected');
+        selectedCount++;
+      }
+      document.getElementById('selectionCount').textContent = selectedCount;
+    }
+
+    function selectFeedback(el) {
+      el.parentElement.querySelectorAll('.feedback-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
     document.querySelectorAll('.filter-tab').forEach(tab => {
       tab.addEventListener('click', () => {
-        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        tab.parentElement.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
       });
     });
 
-    // Meal type interaction
-    document.querySelectorAll('.meal-type').forEach(type => {
-      type.addEventListener('click', () => {
-        document.querySelectorAll('.meal-type').forEach(t => t.classList.remove('active'));
-        type.classList.add('active');
-      });
-    });
-
-    // Hide hint after 5 seconds
     setTimeout(() => {
       document.querySelector('.nav-hint').style.opacity = '0';
       document.querySelector('.nav-hint').style.transition = 'opacity 0.5s';
