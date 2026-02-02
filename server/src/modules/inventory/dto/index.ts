@@ -20,7 +20,7 @@ export class CreateInventoryDto {
 
   @ApiProperty({ example: 2 })
   @IsNumber()
-  @Min(0)
+  @Min(0, { message: '수량은 0 이상이어야 합니다' })
   quantity: number;
 
   @ApiProperty({ example: '개' })
@@ -67,7 +67,7 @@ export class UpdateInventoryDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsNumber()
-  @Min(0)
+  @Min(0, { message: '수량은 0 이상이어야 합니다' })
   quantity?: number;
 
   @ApiProperty({ required: false })
@@ -120,9 +120,9 @@ export class InventoryFilterDto {
 }
 
 export class ConsumeDto {
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 1, description: '소비할 수량' })
   @IsNumber()
-  @Min(0)
+  @Min(0.01, { message: '소비 수량은 0보다 커야 합니다' })
   quantity: number;
 }
 

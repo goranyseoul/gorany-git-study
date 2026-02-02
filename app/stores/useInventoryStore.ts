@@ -115,42 +115,86 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   },
 
   updateItem: async (id, data) => {
+    // BUG-003 수정: Optimistic update with rollback
+    const previousItems = get().items
+
+    // Optimistic update
+    set((state) => ({
+      items: state.items.map((item) =>
+        item.id === id ? { ...item, ...data } : item
+      ),
+    }))
+
     try {
       const updatedItem = await inventoryService.updateItem(id, data)
+      // 서버 응답으로 최종 상태 동기화
       set((state) => ({
         items: state.items.map((item) =>
           item.id === id ? { ...item, ...updatedItem } : item
         ),
       }))
     } catch (error) {
+      // 롤백: 이전 상태로 복원
+      set({ items: previousItems })
       throw error
     }
   },
 
   deleteItem: async (id) => {
+    // BUG-003 수정: Optimistic update with rollback
+    const previousItems = get().items
+    const previousSummary = get().summary
+
+    // Optimistic update
+    set((state) => ({
+      items: state.items.filter((item) => item.id !== id),
+      summary: {
+        ...state.summary,
+        total: state.summary.total - 1,
+      },
+    }))
+
     try {
       await inventoryService.deleteItem(id)
-      set((state) => ({
-        items: state.items.filter((item) => item.id !== id),
-        summary: {
-          ...state.summary,
-          total: state.summary.total - 1,
-        },
-      }))
     } catch (error) {
+      // 롤백: 이전 상태로 복원
+      set({ items: previousItems, summary: previousSummary })
       throw error
     }
   },
 
   consumeItem: async (id, quantity) => {
+    // BUG-003 수정: Optimistic update with rollback
+    const previousItems = get().items
+    const targetItem = previousItems.find((item) => item.id === id)
+
+    if (!targetItem) {
+      throw new Error('아이템을 찾을 수 없습니다')
+    }
+
+    // Optimistic update
+    const optimisticQuantity = targetItem.quantity - quantity
+    set((state) => ({
+      items: optimisticQuantity <= 0
+        ? state.items.filter((item) => item.id !== id)
+        : state.items.map((item) =>
+            item.id === id ? { ...item, quantity: optimisticQuantity } : item
+          ),
+    }))
+
     try {
       const updatedItem = await inventoryService.consumeItem(id, quantity)
+      // 서버 응답으로 최종 상태 동기화
       set((state) => ({
-        items: state.items.map((item) =>
-          item.id === id ? updatedItem : item
-        ).filter((item) => item.quantity > 0),
+        items: updatedItem.quantity <= 0
+          ? state.items.filter((item) => item.id !== id)
+          : state.items.map((item) =>
+              item.id === id ? updatedItem : item
+            ),
       }))
     } catch (error) {
+      // 롤백: 이전 상태로 복원
+      set({ items: previousItems })
       throw error
     }
   },
