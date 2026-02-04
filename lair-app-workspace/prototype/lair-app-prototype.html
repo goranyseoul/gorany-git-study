@@ -1,0 +1,3064 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lair Cash - 프로토타입 v2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+
+    * {
+      font-family: 'Noto Sans KR', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1a1a2e 0%, #0f0f23 100%);
+      margin: 0;
+      padding: 0;
+    }
+
+    .phone-frame {
+      width: 375px;
+      height: 812px;
+      background: #111;
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 0 12px #222, 0 0 60px rgba(0,0,0,0.5);
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .screen::-webkit-scrollbar {
+      display: none;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+      50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+    }
+
+    @keyframes goldFall {
+      0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    @keyframes toastIn {
+      from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+    .animate-popIn { animation: popIn 0.3s ease-out; }
+    .animate-pulse-gold { animation: pulse 1.5s infinite; }
+    .animate-slideUp { animation: slideUp 0.3s ease-out; }
+    .animate-toastIn { animation: toastIn 0.3s ease-out; }
+
+    .gold-particle {
+      position: absolute;
+      font-size: 24px;
+      animation: goldFall 2s ease-in forwards;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+      color: white;
+      font-weight: 600;
+      padding: 14px 24px;
+      border-radius: 12px;
+      width: 100%;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #9CA3AF;
+      font-weight: 500;
+      padding: 12px 24px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-small {
+      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+      color: white;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #F59E0B;
+      border: 1px solid #F59E0B;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .card {
+      background: #1F1F1F;
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid #333;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .badge-green { background: rgba(34, 197, 94, 0.2); color: #22C55E; }
+    .badge-blue { background: rgba(59, 130, 246, 0.2); color: #3B82F6; }
+    .badge-gold { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+    .badge-gray { background: rgba(156, 163, 175, 0.2); color: #9CA3AF; }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-item.active { color: #F59E0B; }
+    .nav-item:not(.active) { color: #6B7280; }
+
+    .progress-bar {
+      height: 8px;
+      background: #333;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #F59E0B, #FBBF24);
+      border-radius: 4px;
+      transition: width 0.5s ease-out;
+    }
+
+    .level-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .level-dot.locked { background: #333; color: #666; border: 2px solid #444; }
+    .level-dot.unlockable { background: #1F1F1F; color: #F59E0B; border: 2px solid #F59E0B; animation: pulse 1.5s infinite; cursor: pointer; }
+    .level-dot.claimed { background: #F59E0B; color: #000; border: 2px solid #F59E0B; }
+
+    .toast {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #22C55E;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 500;
+      z-index: 1000;
+      animation: toastIn 0.3s ease-out;
+      white-space: nowrap;
+    }
+
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #1F1F1F;
+      border-radius: 20px;
+      padding: 24px;
+      width: 280px;
+      text-align: center;
+      animation: popIn 0.3s ease-out;
+    }
+
+    .quiz-option {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: left;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+      background: #2A2A2A;
+      color: white;
+      cursor: pointer;
+    }
+
+    .quiz-option:hover {
+      border-color: #4B5563;
+    }
+
+    .quiz-option.correct {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: #22C55E;
+    }
+
+    .quiz-option.wrong {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #EF4444;
+    }
+
+    .friend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-top: 1px solid #333;
+    }
+
+    .friend-row:first-child {
+      border-top: none;
+    }
+
+    .toggle-switch {
+      display: inline-flex;
+      align-items: center;
+      background: #4B4B4B;
+      border-radius: 20px;
+      padding: 3px;
+      width: 48px;
+      height: 28px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle-switch.on {
+      background: #F59E0B;
+    }
+
+    .toggle-switch-knob {
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    .toggle-switch.on .toggle-switch-knob {
+      transform: translateX(20px);
+    }
+
+    .otp-input {
+      width: 32px;
+      height: 40px;
+      border: 2px solid #444;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 600;
+      color: white;
+      background: #1F1F1F;
+      margin: 0 6px;
+    }
+
+    .otp-input:focus {
+      outline: none;
+      border-color: #F59E0B;
+      background: #2A2A2A;
+    }
+
+    .otp-input.filled {
+      border-color: #F59E0B;
+      background: #2A2A2A;
+    }
+
+    .banner-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+      color: white;
+      padding: 16px;
+      text-align: center;
+      border-radius: 12px;
+      margin: 12px;
+      z-index: 999;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .success-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .locked-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 20px;
+      text-align: center;
+      color: white;
+    }
+
+    .countdown-timer {
+      font-size: 14px;
+      color: #F59E0B;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useRef } = React;
+
+    // ===== 상수 정의 (PRD 기반) =====
+    const QUIZ_DATA = [
+      {
+        card: "세계 경제가 불안할 때 내 돈을 지키는 가장 확실한 방법은 미국 달러(USD)와 금(Gold) 같은 안전 자산을 모으는 것입니다. 이들은 당신의 구매력을 든든하게 방어해 줍니다.",
+        question: "경제가 흔들릴 때 내 자산을 지켜주는 '가장 안전한 방패' 두 가지는?",
+        options: ["한국 원화와 엔화", "미국 달러와 금", "비트코인과 이더리움"],
+        correct: 1,
+        icon: "🛡️"
+      },
+      {
+        card: "USDC는 가치가 항상 1달러($1)에 고정된 디지털 화폐입니다. 변동성 걱정 없이 전 세계 어디서나 달러와 똑같이 통용됩니다.",
+        question: "1 USDC의 가치는 항상 얼마와 같을까요?",
+        options: ["시세에 따라 변함", "언제나 1달러($1)", "1,000원 고정"],
+        correct: 1,
+        icon: "💵"
+      },
+      {
+        card: "이제 무거운 금괴를 집에 보관할 필요가 없습니다. 금을 디지털 토큰으로 만들면 스마트폰에서 mg(밀리그램) 단위로 가볍게 쪼개서 가질 수 있습니다.",
+        question: "디지털 금(토큰)의 가장 큰 장점은 무엇인가요?",
+        options: ["장식용으로 예쁘다", "소액으로도 쉽게 소유할 수 있다", "금방 녹아버린다"],
+        correct: 1,
+        icon: "🥇"
+      },
+      {
+        card: "기존 금융 시스템은 주말이나 밤에 멈춥니다. 하지만 디지털 자산은 365일 24시간 언제든 내가 원할 때 사고팔 수 있습니다.",
+        question: "이 서비스에서 자산을 거래할 수 있는 시간은?",
+        options: ["은행 영업시간만", "평일 낮 시간만", "24시간 언제나"],
+        correct: 2,
+        icon: "🕐"
+      },
+      {
+        card: "실물 금은 살 때 비싸고 보관료도 듭니다. 디지털 금은 보관료나 보증서 분실 걱정이 없어서 투자 비용을 획기적으로 낮춰 줍니다.",
+        question: "디지털 금 투자가 더 유리한 이유는 무엇인가요?",
+        options: ["보관료 등 불필요한 비용이 없다", "종이 보증서를 주기 때문이다", "세금을 더 많이 내서"],
+        correct: 0,
+        icon: "💰"
+      },
+      {
+        card: "당신의 스마트폰에 있는 디지털 금과 달러는 단순한 숫자가 아닙니다. USDC는 발행된 만큼의 실제 현금이 미국 은행 금고에 보관되어 있고, 디지털 금 역시 실제 금고 속 금괴와 1:1로 연결되어 있습니다.",
+        question: "디지털 금과 USDC가 실제 자산만큼 안전하다고 신뢰받는 결정적인 이유는?",
+        options: ["인터넷에서 가장 인기 있는 자산이라서", "발행량만큼 실제 금과 달러를 은행과 금고에 1:1로 보관하고 있어서", "가격이 매일매일 빠르게 변하기 때문에"],
+        correct: 1,
+        icon: "🔒"
+      },
+      {
+        card: "금은방에 가서 금을 파는 건 번거롭습니다. 이곳에서는 클릭 한 번으로 금을 달러(USDC)로 바꾸고, 필요할 때 즉시 현금화할 수 있습니다.",
+        question: "디지털 금을 현금화하는 가장 빠른 방법은?",
+        options: ["택배로 금을 보낸다", "앱에서 즉시 달러로 변환한다", "친구에게 빌려준다"],
+        correct: 1,
+        icon: "⚡"
+      },
+      {
+        card: "디지털 자산은 미 국채 수익률과 연동되어 안전하게 이자가 붙는 상품으로 재투자될 수 있습니다. 서랍 속 현금은 가만히 있으면 물가에 밀리지만, 여기선 꾸준히 수익이 쌓입니다.",
+        question: "서랍 속 현금과 디지털 안전 자산의 차이점은?",
+        options: ["차이가 없다", "디지털 자산은 수익이 쌓일 수 있다", "현금이 더 빠르다"],
+        correct: 1,
+        icon: "📈"
+      },
+      {
+        card: "블록체인 위의 기록은 누구도 조작할 수 없습니다. 당신의 소유권은 전 세계가 공유하는 디지털 장부에 영구히 기록됩니다.",
+        question: "내 소유권이 안전하게 기록되는 방식은?",
+        options: ["메모장에 적어둔다", "조작 불가능한 디지털 장부에 기록된다", "아무도 모르게 숨긴다"],
+        correct: 1,
+        icon: "📋"
+      },
+      {
+        card: "이제 당신은 달러와 금을 스마트하게 소유하는 법을 마스터했습니다. 지금 바로 금을 쌓기 시작하세요. 축하합니다!",
+        question: "마스터 코스를 마친 소감으로 가장 적절한 것은?",
+        options: ["여전히 어렵다", "이제 안전하게 자산을 불릴 준비가 됐다!", "나중에 다시 하겠다"],
+        correct: 1,
+        icon: "🏆"
+      }
+    ];
+
+    // 배틀패스 레벨 (PRD 기반)
+    const BATTLEPASS_LEVELS = [
+      { level: 1, xpRequired: 50, reward: 1 },
+      { level: 2, xpRequired: 50, reward: 1 },
+      { level: 3, xpRequired: 100, reward: 2 },
+      { level: 4, xpRequired: 100, reward: 2 },
+      { level: 5, xpRequired: 200, reward: 3 },
+      { level: 6, xpRequired: 250, reward: 3 },
+      { level: 7, xpRequired: 250, reward: 4 },
+      { level: 8, xpRequired: 500, reward: 5 },
+      { level: 9, xpRequired: 500, reward: 5 },
+      { level: 10, xpRequired: 1000, reward: 8 },
+    ];
+
+    // 🎮 데모용: 친구 목록 비움 (신규 유저 상태)
+    // 초대 링크 공유 버튼으로 친구 추가 시뮬레이션 가능
+    const INITIAL_FRIENDS = [];
+
+    // 쿨타임 로직 (PRD 기반: 10초→30초→1분→2분→5분→10분→20분→40분→60분→이후 +5분씩)
+    const COOLDOWN_SEQUENCE = [10, 30, 60, 120, 180, 300, 420, 600, 900, 1200];
+    const MAX_COOLDOWN = 1200; // 20분
+    const COOLDOWN_INCREMENT = 300; // 20분 이후 +5분씩
+
+    // ===== 유틸리티 함수 =====
+    const formatTime = (seconds) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const getCumulativeXP = (level) => {
+      return BATTLEPASS_LEVELS.slice(0, level).reduce((sum, l) => sum + l.xpRequired, 0);
+    };
+
+    const getCurrentLevel = (xp) => {
+      let cumulative = 0;
+      for (let i = 0; i < BATTLEPASS_LEVELS.length; i++) {
+        cumulative += BATTLEPASS_LEVELS[i].xpRequired;
+        if (xp < cumulative) return i + 1;
+      }
+      return 10;
+    };
+
+    // ===== 공통 컴포넌트 =====
+
+    // 금 파티클 애니메이션
+    const GoldParticles = ({ containerRef }) => {
+      useEffect(() => {
+        if (!containerRef.current) return;
+        const particles = ['🪙', '✨', '💰', '⭐'];
+
+        for (let i = 0; i < 30; i++) {
+          setTimeout(() => {
+            const particle = document.createElement('div');
+            particle.className = 'gold-particle';
+            particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (1.5 + Math.random()) + 's';
+            containerRef.current.appendChild(particle);
+            setTimeout(() => particle.remove(), 2500);
+          }, i * 50);
+        }
+      }, []);
+
+      return null;
+    };
+
+    // Toast 컴포넌트
+    const Toast = ({ message, onClose }) => {
+      useEffect(() => {
+        const timer = setTimeout(onClose, 2000);
+        return () => clearTimeout(timer);
+      }, [onClose]);
+
+      return <div className="toast">{message}</div>;
+    };
+
+    // Modal 컴포넌트
+    const Modal = ({ children, onClose }) => (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          {children}
+        </div>
+      </div>
+    );
+
+    // 하단 네비게이션
+    const BottomNav = ({ active, onChange }) => (
+      <div className="absolute bottom-0 left-0 right-0 bg-[#1A1A1A] border-t border-[#333] px-4 py-2 flex justify-around">
+        <div className={`nav-item ${active === 'home' ? 'active' : ''}`} onClick={() => onChange('home')}>
+          <span className="text-xl">🏠</span>
+          <span className="text-xs">홈</span>
+        </div>
+        <div className={`nav-item ${active === 'friends' ? 'active' : ''}`} onClick={() => onChange('friends')}>
+          <span className="text-xl">👥</span>
+          <span className="text-xs">친구 초대</span>
+        </div>
+        <div className={`nav-item ${active === 'settings' ? 'active' : ''}`} onClick={() => onChange('settings')}>
+          <span className="text-xl">⚙️</span>
+          <span className="text-xs">설정</span>
+        </div>
+      </div>
+    );
+
+    // ===== 온보딩 화면들 =====
+
+    // 서비스 소개 화면
+    const IntroScreen = ({ onNext }) => (
+      <div className="screen bg-[#111] flex flex-col items-center justify-center px-6 text-white animate-fadeIn">
+        <div className="text-6xl mb-8">💵 → 🪙</div>
+        <h1 className="text-2xl font-bold mb-2">달러로 금캐기</h1>
+        <h2 className="text-xl text-amber-400 mb-6">퀴즈 풀고 금 받기</h2>
+        <p className="text-gray-400 text-center mb-4">
+          5분 만에 달러 투자 원리를<br/>배우고, 금 모으기를 시작하세요.
+        </p>
+        <div className="bg-amber-500/20 text-amber-400 px-4 py-3 rounded-xl mb-8 text-center">
+          🎁 지금 문제를 풀면<br/>금 10mg을 드립니다
+        </div>
+        <button className="btn-primary" onClick={onNext}>
+          금 캐러 가기
+        </button>
+      </div>
+    );
+
+    // 퀴즈 화면
+    const QuizScreen = ({ onComplete, onSkip, containerRef }) => {
+      const [step, setStep] = useState(0);
+      const [selectedAnswer, setSelectedAnswer] = useState(null);
+      const [showResult, setShowResult] = useState(false);
+      const [showSkipModal, setShowSkipModal] = useState(false);
+      const [showGoldParticles, setShowGoldParticles] = useState(false);
+      const quiz = QUIZ_DATA[step % QUIZ_DATA.length];
+      const totalSteps = 10;
+
+      const handleAnswer = (index) => {
+        if (showResult) return;
+        setSelectedAnswer(index);
+
+        if (index === quiz.correct) {
+          setShowResult(true);
+          setShowGoldParticles(true);
+          setTimeout(() => {
+            setShowResult(false);
+            setShowGoldParticles(false);
+            setSelectedAnswer(null);
+            if (step < totalSteps - 1) {
+              setStep(step + 1);
+            } else {
+              onComplete();
+            }
+          }, 1500);
+        }
+      };
+
+      return (
+        <div className="screen bg-[#111] text-white">
+          {showGoldParticles && <GoldParticles containerRef={containerRef} />}
+
+          <div className="p-4 flex justify-between items-center">
+            <button className="text-gray-400 text-xl">←</button>
+            <span className="text-gray-400">{step + 1}/{totalSteps}</span>
+            <button className="text-gray-400 text-sm font-normal hover:text-gray-300 transition-colors" onClick={() => setShowSkipModal(true)}>건너뛰기</button>
+          </div>
+
+          <div className="px-6 pt-4 animate-fadeIn" key={step}>
+            <div className="text-5xl text-center mb-6">{quiz.icon}</div>
+
+            <div className="card mb-6">
+              <p className="text-gray-300 text-sm">{quiz.card}</p>
+            </div>
+
+            <p className="text-lg font-medium mb-4">Q. {quiz.question}</p>
+
+            <div className="space-y-3">
+              {quiz.options.map((option, index) => (
+                <button
+                  key={index}
+                  className={`quiz-option ${
+                    selectedAnswer === index
+                      ? index === quiz.correct ? 'correct' : 'wrong'
+                      : ''
+                  }`}
+                  onClick={() => handleAnswer(index)}
+                  disabled={showResult}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {showResult && (
+            <Modal onClose={() => {}}>
+              <div className="text-5xl mb-4">🎉</div>
+              <h3 className="text-xl font-bold text-white mb-2">정답!</h3>
+              <p className="text-amber-400 text-lg">🪙 +1mg 획득!</p>
+            </Modal>
+          )}
+
+          {showSkipModal && (
+            <Modal onClose={() => setShowSkipModal(false)}>
+              <h3 className="text-lg font-bold text-white mb-3">퀴즈를 건너뛸까요?</h3>
+              <p className="text-gray-400 text-sm mb-6">
+                지금 건너뛰면<br/>금 10mg 보상을 받을 수 없어요.
+              </p>
+              <button className="btn-primary mb-3" onClick={() => setShowSkipModal(false)}>
+                계속 풀기
+              </button>
+              <button className="btn-secondary w-full" onClick={onSkip}>
+                건너뛰기
+              </button>
+            </Modal>
+          )}
+        </div>
+      );
+    };
+
+    // 완주 축하 화면
+    const CompleteScreen = ({ onNext, containerRef }) => {
+      const [showParticles, setShowParticles] = useState(true);
+
+      return (
+        <div className="screen bg-[#111] flex flex-col items-center justify-center px-6 text-white animate-fadeIn">
+          {showParticles && <GoldParticles containerRef={containerRef} />}
+          <div className="text-6xl mb-6">🏆</div>
+          <h1 className="text-2xl font-bold mb-2">대단해요!</h1>
+          <p className="text-gray-400 mb-6">모든 문제를 풀었어요</p>
+          <div className="card mb-8 text-center w-full">
+            <p className="text-amber-400 text-2xl font-bold">🪙 10mg 획득!</p>
+          </div>
+          <button className="btn-primary" onClick={onNext}>
+            금 저장하기
+          </button>
+        </div>
+      );
+    };
+
+    // 로그인 화면
+    const LoginScreen = ({ onLogin }) => (
+      <div className="screen bg-[#111] flex flex-col items-center justify-center px-6 text-white animate-fadeIn">
+        <div className="text-5xl mb-6">🔐</div>
+        <h1 className="text-xl font-bold mb-2">금고의 열쇠를 만드세요</h1>
+        <p className="text-gray-400 mb-8 text-center">가입하면 획득한 금이 저장됩니다</p>
+
+        <button className="w-full p-4 rounded-xl bg-white text-black font-medium mb-3 flex items-center justify-center gap-3" onClick={onLogin}>
+          <span className="text-lg">G</span> Google로 계속하기
+        </button>
+        <button className="w-full p-4 rounded-xl bg-black border border-gray-700 text-white font-medium mb-3 flex items-center justify-center gap-3" onClick={onLogin}>
+          <span>🍎</span> Apple로 계속하기
+        </button>
+        <button className="w-full p-4 rounded-xl bg-[#2A2A2A] text-white font-medium flex items-center justify-center gap-3" onClick={onLogin}>
+          <span>✉️</span> 이메일로 계속하기
+        </button>
+      </div>
+    );
+
+    // 레퍼럴 코드 입력 화면 (PRD 기반)
+    const ReferralScreen = ({ onComplete, onSkip }) => {
+      const [code, setCode] = useState('');
+      const [error, setError] = useState('');
+      const [success, setSuccess] = useState(false);
+
+      const handleSubmit = () => {
+        // 코드 형식 검증: GOLD-XXXXXX (6자리)
+        const codePattern = /^GOLD-[A-Z0-9]{6}$/i;
+        if (!codePattern.test(code.toUpperCase())) {
+          setError('올바른 형식이 아니에요. GOLD-XXXXXX 형식으로 입력해주세요.');
+          return;
+        }
+        setError('');
+        setSuccess(true);
+        setTimeout(() => onComplete(true), 1500);
+      };
+
+      const handleCodeChange = (e) => {
+        let value = e.target.value.toUpperCase();
+        // 자동으로 GOLD- 접두사 추가
+        if (value.length > 0 && !value.startsWith('GOLD-')) {
+          if (value.length <= 6) {
+            value = 'GOLD-' + value;
+          }
+        }
+        setCode(value);
+        setError('');
+      };
+
+      return (
+        <div className="screen bg-[#111] flex flex-col px-6 text-white animate-fadeIn">
+          <div className="p-4 flex justify-between items-center -mx-6">
+            <div></div>
+            <button className="text-gray-400 text-sm" onClick={onSkip}>건너뛰기</button>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="text-5xl mb-6">🎁</div>
+            <h1 className="text-xl font-bold mb-2">초대 코드가 있나요?</h1>
+            <p className="text-gray-400 mb-8 text-center text-sm">친구의 초대 코드를 입력하면<br/>추가 보상을 받을 수 있어요
+            </p>
+
+            <div className="text-xs text-gray-500 text-center mb-2">6자리 코드 입력</div>
+            <div className="w-full mb-4">
+              <input
+                type="text"
+                className="w-full bg-[#2A2A2A] p-4 rounded-xl text-center text-xl font-mono outline-none focus:ring-2 focus:ring-amber-500 uppercase"
+                placeholder="GOLD-XXXXXX"
+                value={code}
+                onChange={handleCodeChange}
+                maxLength={11}
+              />
+              {error && <p className="text-red-400 text-sm mt-2 text-center">{error}</p>}
+            </div>
+
+            {success ? (
+              <div className="bg-green-500/20 text-green-400 p-4 rounded-xl w-full text-center animate-popIn mb-4">
+                <span className="text-2xl">🎉</span>
+                <p className="font-medium mt-2">코드 적용 완료!</p>
+                <p className="text-sm">추가 보상이 지급됩니다</p>
+              </div>
+            ) : (
+              <>
+                <button
+                  className="btn-primary mb-3 w-full"
+                  onClick={handleSubmit}
+                  disabled={code.length < 11}
+                >
+                  확인
+                </button>
+                <button
+                  className="w-full py-3 rounded-xl bg-transparent text-gray-400 font-medium text-sm hover:text-gray-300 transition-colors"
+                  onClick={onSkip}
+                >
+                  건너뛰기
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className="pb-8 text-center">
+            <p className="text-xs text-gray-500">
+              💡 초대 코드는 친구 초대 화면에서 확인할 수 있어요
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    // 닉네임 설정 화면 (온보딩)
+    const NicknameScreen = ({ onComplete }) => {
+      const [name, setName] = useState('');
+      const [error, setError] = useState('');
+
+      const validateNickname = (value) => {
+        if (value.length < 2) return '닉네임은 2자 이상이어야 해요';
+        if (value.length > 10) return '닉네임은 10자 이하여야 해요';
+        if (/[^a-zA-Z0-9가-힣_]/.test(value)) return '한글, 영문, 숫자, _만 사용 가능해요';
+        return '';
+      };
+
+      const handleSubmit = () => {
+        const validationError = validateNickname(name);
+        if (validationError) {
+          setError(validationError);
+          return;
+        }
+        onComplete(name);
+      };
+
+      return (
+        <div className="screen bg-[#111] text-white flex flex-col">
+          <div className="flex-1 flex flex-col items-center justify-center p-6">
+            <div className="text-6xl mb-6">👤</div>
+            <h2 className="text-2xl font-bold mb-2">닉네임을 설정해주세요</h2>
+            <p className="text-gray-400 text-center mb-8">
+              친구들에게 보여질 이름이에요<br/>
+              나중에 설정에서 변경할 수 있어요
+            </p>
+
+            <div className="w-full max-w-xs mb-6">
+              <input
+                type="text"
+                className="w-full bg-[#2A2A2A] p-4 rounded-xl text-center text-lg outline-none focus:ring-2 focus:ring-amber-500"
+                placeholder="닉네임 입력 (2~10자)"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setError('');
+                }}
+                maxLength={10}
+              />
+              {error && <p className="text-red-400 text-sm mt-2 text-center">{error}</p>}
+            </div>
+
+            <button
+              className="btn-primary w-full max-w-xs"
+              onClick={handleSubmit}
+              disabled={name.length < 2}
+            >
+              시작하기
+            </button>
+
+            <p className="text-xs text-gray-500 mt-4 text-center">
+              💡 2~10자, 한글/영문/숫자/_ 사용 가능
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    // ===== 메인 화면들 =====
+
+    // 홈 화면
+    const HomeScreen = ({ userData, onMine, onHarvest, onNavigate, containerRef }) => {
+      const { goldBalance, usdcBalance, miningStatus, cooldownTime, currentLevel } = userData;
+      const [countdown, setCountdown] = useState(cooldownTime);
+      const [showHarvestParticles, setShowHarvestParticles] = useState(false);
+
+      useEffect(() => {
+        setCountdown(cooldownTime);
+      }, [cooldownTime]);
+
+      useEffect(() => {
+        if (miningStatus === 'mining' && countdown > 0) {
+          const timer = setInterval(() => {
+            setCountdown(c => {
+              if (c <= 1) {
+                clearInterval(timer);
+                return 0;
+              }
+              return c - 1;
+            });
+          }, 1000);
+          return () => clearInterval(timer);
+        }
+      }, [miningStatus]);
+
+      const handleHarvest = () => {
+        setShowHarvestParticles(true);
+        onHarvest();
+        setTimeout(() => setShowHarvestParticles(false), 2500);
+      };
+
+      const getMiningUI = () => {
+        if (miningStatus === 'ready') {
+          return {
+            badge: <span className="badge badge-green">시작 가능</span>,
+            message: "금을 캐러 가볼까요?",
+            button: <button className="btn-primary" onClick={onMine}>⛏️ 금 캐기 시작</button>
+          };
+        } else if (miningStatus === 'mining' && countdown > 0) {
+          return {
+            badge: <span className="badge badge-blue">채굴 중</span>,
+            message: `${formatTime(countdown)} 후 금을 수확할 수 있어요`,
+            button: <button className="btn-primary" disabled>채굴 중...</button>
+          };
+        } else {
+          return {
+            badge: <span className="badge badge-gold">수확 가능</span>,
+            message: "금이 준비되었어요!",
+            button: <button className="btn-primary" onClick={handleHarvest}>🌾 금 수확하기</button>
+          };
+        }
+      };
+
+      const miningUI = getMiningUI();
+
+      return (
+        <div className="screen bg-[#111] text-white pb-20">
+          {showHarvestParticles && <GoldParticles containerRef={containerRef} />}
+
+          <div className="p-4 flex justify-between items-center">
+            <span className="text-xl font-bold text-amber-400">Lair Cash</span>
+            <button onClick={() => onNavigate('settings')} className="text-xl">⚙️</button>
+          </div>
+
+          <div className="px-4">
+            {/* 잔고 카드 */}
+            <div className="card mb-4">
+              <div className="flex justify-between mb-4">
+                <div>
+                  <p className="text-gray-400 text-sm">💵 달러 잔고</p>
+                  <p className="text-2xl font-bold">${usdcBalance.toFixed(2)}</p>
+                  <p className="text-xs text-gray-500">USDC</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-gray-400 text-sm">🪙 금 잔고</p>
+                  <p className="text-2xl font-bold text-amber-400">{goldBalance.toFixed(1)}mg</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button className="flex-1 py-3 rounded-xl bg-[#2A2A2A] font-medium hover:bg-[#333] transition-colors" onClick={() => onNavigate('receive')}>
+                  받기
+                </button>
+                <button className="flex-1 py-3 rounded-xl bg-[#2A2A2A] font-medium hover:bg-[#333] transition-colors" onClick={() => onNavigate('send')}>
+                  보내기
+                </button>
+              </div>
+            </div>
+
+            {/* 금캐기 게임 카드 */}
+            <div className="card mb-4">
+              <div className="flex justify-between items-center mb-4">
+                <span className="font-medium">⛏️ 금 캐기 게임</span>
+                {miningUI.badge}
+              </div>
+              <div className="text-center py-4">
+                <div className="text-4xl mb-3">⛏️</div>
+                <p className="text-gray-400 mb-4">{miningUI.message}</p>
+                {miningUI.button}
+              </div>
+              {currentLevel >= 5 && (
+                <div className="mt-3 bg-amber-500/20 text-amber-400 text-sm p-2 rounded-lg text-center">
+                  ⚡ Lv.5 채굴량 5배 부스트 적용 중
+                </div>
+              )}
+            </div>
+
+            {/* 배틀패스 배너 */}
+            <div className="card mb-4 cursor-pointer hover:border-amber-500/50 transition-colors" onClick={() => onNavigate('friends')}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">👥</span>
+                <div className="flex-1">
+                  <p className="font-medium">친구 초대하면 채굴량 5배</p>
+                  <p className="text-sm text-amber-400">+ 최대 34mg 보상 →</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 달러로 금캐기 카드 */}
+            <div
+              className="card mb-4 cursor-pointer hover:border-amber-500/50 transition-colors active:bg-[#252525]"
+              onClick={() => onNavigate('dollarMining')}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium">💰 달러로 금캐기</p>
+                  <p className="text-sm text-gray-400">$10,000 예치 시 예상</p>
+                  <p className="text-sm text-amber-400">+15.3mg/일</p>
+                </div>
+                <span className="text-gray-400 text-xl">→</span>
+              </div>
+            </div>
+
+            {/* Coming Soon */}
+            <div className="card opacity-50">
+              <div className="flex justify-between items-center">
+                <p className="font-medium">🔄 금 사고팔기</p>
+                <span className="badge badge-gray">Coming Soon</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // 친구 초대 & 배틀패스 화면
+    const FriendsScreen = ({ userData, friends, onNudge, onClaimReward, onNavigate, onInviteFriend, containerRef, isPhoneVerified = false }) => {
+      const { currentXP, claimedLevels, totalNudgeXP } = userData;
+      const [showClaimModal, setShowClaimModal] = useState(null);
+      const [showClaimParticles, setShowClaimParticles] = useState(false);
+      const [copiedCode, setCopiedCode] = useState(false);
+      const [nudgeToast, setNudgeToast] = useState(null);
+      const [nudgeSuccessBanner, setNudgeSuccessBanner] = useState(null);
+      const [nudgedFriends, setNudgedFriends] = useState(new Set());
+
+      const currentLevel = getCurrentLevel(currentXP);
+      const currentLevelData = BATTLEPASS_LEVELS[currentLevel - 1] || BATTLEPASS_LEVELS[0];
+      const prevCumulativeXP = getCumulativeXP(currentLevel - 1);
+      const currentLevelProgress = Math.max(0, currentXP - prevCumulativeXP);
+      const progressPercent = Math.min(100, (currentLevelProgress / currentLevelData.xpRequired) * 100);
+
+      const totalRewardsClaimed = BATTLEPASS_LEVELS
+        .filter((_, i) => claimedLevels.includes(i + 1))
+        .reduce((sum, l) => sum + l.reward, 0);
+
+      const handleClaimClick = (level) => {
+        const cumXP = getCumulativeXP(level);
+        if (currentXP >= cumXP && !claimedLevels.includes(level)) {
+          setShowClaimModal(level);
+        }
+      };
+
+      const confirmClaim = () => {
+        const level = showClaimModal;
+        setShowClaimModal(null);
+        setShowClaimParticles(true);
+        onClaimReward(level);
+        setTimeout(() => setShowClaimParticles(false), 2500);
+      };
+
+      const handleCopyCode = () => {
+        setCopiedCode(true);
+        setTimeout(() => setCopiedCode(false), 2000);
+      };
+
+      const getFriendStatusUI = (friend) => {
+        const today = new Date().toDateString();
+        const nudgedToday = friend.lastNudge === today;
+
+        // PRD 기반 친구 상태 UI
+        if (nudgedToday) {
+          return { text: "✅ 오늘 찔렀어요", canNudge: false, color: "text-gray-400", badge: "badge-gray" };
+        }
+        switch (friend.status) {
+          case 'cooldown_ready':
+            return { text: "⏰ 쿨타임완료", canNudge: true, color: "text-amber-400", badge: "badge-gold" };
+          case 'harvestable':
+            return { text: "🌾 수확가능", canNudge: false, color: "text-green-400", badge: "badge-green" };
+          case 'mining':
+            return { text: "⛏️ 금캐기중", canNudge: false, color: "text-blue-400", badge: "badge-blue" };
+          case 'cooldown_in_progress':
+            return { text: "⏳ 쿨타임중", canNudge: false, color: "text-gray-400", badge: "badge-gray" };
+          default:
+            return { text: "⏳ 쿨타임중", canNudge: false, color: "text-gray-400", badge: "badge-gray" };
+        }
+      };
+
+      return (
+        <div className="screen bg-[#111] text-white pb-20 relative">
+          {showClaimParticles && <GoldParticles containerRef={containerRef} />}
+
+          {nudgeSuccessBanner && (
+            <div className="banner-top whitespace-pre-line">
+              {nudgeSuccessBanner}
+            </div>
+          )}
+
+          <div className="p-4 flex items-center gap-3">
+            <button onClick={() => onNavigate('home')} className="text-xl">←</button>
+            <span className="text-xl font-bold">친구 초대</span>
+          </div>
+
+          <div className="px-4">
+            {/* 배틀패스 카드 */}
+            <div className="card mb-4 relative">
+              {/* 미인증 시 배틀패스 잠금 오버레이 */}
+              {!isPhoneVerified && (
+                <div className="absolute inset-0 bg-black/80 rounded-xl flex flex-col items-center justify-center z-10 p-4">
+                  <div className="text-4xl mb-3">🔒</div>
+                  <h3 className="font-bold text-lg mb-2">배틀패스 잠금</h3>
+                  <p className="text-gray-400 text-sm text-center mb-4">전화번호 인증 후<br/>보상을 받을 수 있어요</p>
+                  <button
+                    onClick={() => onNavigate('phone-input')}
+                    className="bg-amber-500 text-black font-bold py-2 px-6 rounded-lg"
+                  >
+                    전화번호 인증하기
+                  </button>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-2">
+                  <span>⛏️</span>
+                  <span className="font-bold text-amber-400">Lv.{currentLevel}</span>
+                </div>
+                <span className="text-sm text-gray-400">{totalRewardsClaimed}mg/34mg</span>
+              </div>
+
+              <div className="progress-bar mb-2">
+                <div className="progress-fill" style={{ width: `${progressPercent}%` }}></div>
+              </div>
+              <p className="text-sm text-gray-400 text-right mb-4">
+                {currentXP} / {getCumulativeXP(currentLevel)} XP
+              </p>
+
+              {currentLevel >= 5 && (
+                <div className="bg-amber-500/20 text-amber-400 text-sm p-2 rounded-lg mb-4 text-center">
+                  ⚡ 채굴량 5배 적용 중
+                </div>
+              )}
+
+              {/* 레벨 로드맵 */}
+              <div className="flex justify-between gap-1 overflow-x-auto pb-2">
+                {BATTLEPASS_LEVELS.map((level, i) => {
+                  const cumXP = getCumulativeXP(i + 1);
+                  const isUnlocked = currentXP >= cumXP;
+                  const isClaimed = claimedLevels.includes(i + 1);
+
+                  return (
+                    <div
+                      key={i}
+                      className={`level-dot ${isClaimed ? 'claimed' : isUnlocked ? 'unlockable' : 'locked'}`}
+                      onClick={() => isPhoneVerified && handleClaimClick(i + 1)}
+                      title={`Lv.${i + 1}: ${level.reward}mg`}
+                    >
+                      {isClaimed ? '✓' : i + 1}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* XP 획득 방법 */}
+            <div className="card mb-4">
+              <h3 className="font-medium mb-3 text-gray-300">XP 획득 방법</h3>
+              <div className="space-y-2">
+                <div
+                  className="flex justify-between items-center py-2 px-2 rounded-lg hover:bg-white/5 cursor-pointer active:bg-white/10"
+                  onClick={() => {/* 스크롤 to 초대 섹션 - 같은 페이지 */}}
+                >
+                  <span className="text-sm">👥 친구 초대</span>
+                  <span className="text-amber-400 text-sm">+50 XP/1명 →</span>
+                </div>
+                <div
+                  className="flex justify-between items-center py-2 px-2 rounded-lg hover:bg-white/5 cursor-pointer active:bg-white/10"
+                  onClick={() => onNavigate('receive')}
+                >
+                  <span className="text-sm">💰 달러 입금</span>
+                  <span className="text-amber-400 text-sm">+5 XP/$1 →</span>
+                </div>
+                <div className="flex justify-between items-center py-2 px-2 rounded-lg hover:bg-white/5 cursor-pointer">
+                  <span className="text-sm">👆 Nudge 발송</span>
+                  <span className="text-amber-400 text-sm">+1 XP →</span>
+                </div>
+                <div className="flex justify-between items-center py-2 px-2 rounded-lg hover:bg-white/5 cursor-pointer">
+                  <span className="text-sm">✅ Nudge 성공</span>
+                  <span className="text-amber-400 text-sm">+3 XP →</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 친구에게 금 선물하기 */}
+            <div className="card mb-4">
+              <h3 className="font-medium mb-2">🎁 친구에게 금 선물하기</h3>
+              <p className="text-sm text-gray-400 mb-4">
+                친구를 초대하면 가입한 친구도, 나도 금 1mg씩!
+              </p>
+              <div className="flex items-center gap-2 mb-3">
+                <code className="flex-1 bg-[#2A2A2A] p-3 rounded-lg text-amber-400 text-center">GOLD-ABC123</code>
+                <button className="btn-small" onClick={handleCopyCode}>
+                  {copiedCode ? '✓' : '복사'}
+                </button>
+              </div>
+              <button className="btn-primary" onClick={onInviteFriend}>📨 초대 링크 공유</button>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                💡 링크가 안 되면 코드를 직접 입력해달라고 안내
+              </p>
+            </div>
+
+            {/* 내 친구들 섹션 (UI Option B) */}
+            <div className="card">
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="font-medium">👥 {friends.length}명의 친구</h3>
+                <span className="text-gray-500">·</span>
+                <span className="text-amber-400 text-sm">{totalNudgeXP} XP 획득</span>
+              </div>
+
+              {friends.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <div className="text-5xl mb-4">👥</div>
+                  <p className="font-medium text-white mb-2">아직 친구가 없어요</p>
+                  <p className="text-sm mb-4">친구를 초대하면 서로 금캐기<br/>현황을 확인하고 콕 찌를 수 있어요!</p>
+                  <button className="btn-primary py-2 px-4 text-sm" onClick={onInviteFriend}>
+                    📨 지금 초대하기
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  {friends.map(friend => {
+                    const statusUI = getFriendStatusUI(friend);
+                    return (
+                      <div key={friend.id} className="friend-row">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">👤</span>
+                          <div>
+                            <p className="font-medium">{friend.name}</p>
+                            <span className={`badge ${statusUI.badge} text-xs`}>
+                              {statusUI.text}
+                            </span>
+                          </div>
+                        </div>
+                        {statusUI.canNudge && (
+                          <button
+                            className={`btn-small ${nudgedFriends.has(friend.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={nudgedFriends.has(friend.id)}
+                            onClick={() => {
+                              onNudge(friend.id);
+                              // Show success toast
+                              const friendName = friend.name;
+                              setNudgeToast(`👆 +1 XP 획득!\n${friendName}님에게 알림 발송`);
+                              setNudgedFriends(new Set([...nudgedFriends, friend.id]));
+                              // Simulate friend starting mining after 3 seconds
+                              setTimeout(() => {
+                                setNudgeSuccessBanner(`🎉 ${friendName}님이 금캐기 시작!\n+3 XP 획득!`);
+                                setTimeout(() => setNudgeSuccessBanner(null), 3000);
+                              }, 3000);
+                            }}
+                          >
+                            {nudgedFriends.has(friend.id) ? '👆 찔렀어요' : '👆 콕 찌르기'}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 보상 해금 모달 */}
+          {showClaimModal && (
+            <Modal onClose={() => setShowClaimModal(null)}>
+              <div className="text-5xl mb-4">🎉</div>
+              <h3 className="text-xl font-bold text-white mb-2">Lv.{showClaimModal} 달성!</h3>
+              <p className="text-amber-400 text-lg mb-6">
+                🪙 {BATTLEPASS_LEVELS[showClaimModal - 1].reward}mg 획득!
+              </p>
+              <div className="flex gap-3">
+                <button className="flex-1 py-3 rounded-xl bg-[#2A2A2A] text-white" onClick={() => setShowClaimModal(null)}>
+                  닫기
+                </button>
+                <button className="flex-1 btn-primary" onClick={confirmClaim}>
+                  받기
+                </button>
+              </div>
+            </Modal>
+          )}
+
+          {/* Nudge 발송 성공 토스트 */}
+          {nudgeToast && (
+            <div className="toast whitespace-pre-line">
+              {nudgeToast}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // 설정 화면
+    const SettingsScreen = ({ onNavigate, onLogout, isPhoneVerified = false, nickname = '', onNicknameChange }) => {
+      const [pushNotifications, setPushNotifications] = useState(true);
+      const [editingNickname, setEditingNickname] = useState(false);
+      const [newNickname, setNewNickname] = useState(nickname);
+      const [nicknameError, setNicknameError] = useState('');
+
+      const validateNickname = (value) => {
+        if (value.length < 2) return '닉네임은 2자 이상이어야 해요';
+        if (value.length > 10) return '닉네임은 10자 이하여야 해요';
+        if (/[^a-zA-Z0-9가-힣_]/.test(value)) return '한글, 영문, 숫자, _만 사용 가능해요';
+        return '';
+      };
+
+      const handleNicknameSave = () => {
+        const error = validateNickname(newNickname);
+        if (error) {
+          setNicknameError(error);
+          return;
+        }
+        onNicknameChange(newNickname);
+        setEditingNickname(false);
+        setNicknameError('');
+      };
+
+      return (
+      <div className="screen bg-[#111] text-white pb-20">
+        <div className="p-4 flex items-center gap-3">
+          <button onClick={() => onNavigate('home')} className="text-xl">←</button>
+          <span className="text-xl font-bold">설정</span>
+        </div>
+
+        <div className="px-4">
+          <div className="card mb-4">
+            <h3 className="text-sm text-gray-500 mb-2">계정 정보</h3>
+            <p className="flex items-center gap-2 mb-2">📧 user@email.com</p>
+
+            {/* 닉네임 섹션 */}
+            {editingNickname ? (
+              <div className="mt-3 pt-3 border-t border-gray-700">
+                <div className="flex items-center gap-2">
+                  <span>👤</span>
+                  <input
+                    type="text"
+                    className="flex-1 bg-[#2A2A2A] p-2 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500"
+                    value={newNickname}
+                    onChange={(e) => {
+                      setNewNickname(e.target.value);
+                      setNicknameError('');
+                    }}
+                    maxLength={10}
+                    placeholder="닉네임 입력"
+                  />
+                  <button className="btn-small text-xs py-1 px-3" onClick={handleNicknameSave}>저장</button>
+                  <button className="text-gray-400 text-sm" onClick={() => {
+                    setEditingNickname(false);
+                    setNewNickname(nickname);
+                    setNicknameError('');
+                  }}>취소</button>
+                </div>
+                {nicknameError && <p className="text-red-400 text-xs mt-2 ml-6">{nicknameError}</p>}
+              </div>
+            ) : (
+              <div
+                className="flex items-center justify-between mt-3 pt-3 border-t border-gray-700 cursor-pointer hover:bg-white/5 rounded-lg px-2 -mx-2 py-2"
+                onClick={() => setEditingNickname(true)}
+              >
+                <span className="flex items-center gap-2">👤 {nickname || '닉네임 미설정'}</span>
+                <span className="text-gray-400 text-sm">변경 →</span>
+              </div>
+            )}
+          </div>
+
+          <div className="card mb-4">
+            <h3 className="text-sm text-gray-500 mb-3">서비스</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2">
+                <span>🔔 푸시 알림</span>
+                <div className={`toggle-switch ${pushNotifications ? 'on' : ''}`} onClick={() => setPushNotifications(!pushNotifications)}>
+                  <div className="toggle-switch-knob"></div>
+                </div>
+              </div>
+              <div
+                className="flex justify-between items-center py-2 cursor-pointer hover:bg-white/5 rounded-lg px-2 -mx-2"
+                onClick={() => onNavigate('tutorial')}
+              >
+                <span>📚 튜토리얼</span>
+                <span className="text-gray-400">→</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="card mb-4">
+            <h3 className="text-sm text-gray-500 mb-3">앱 정보</h3>
+            <div className="space-y-1">
+              <div className="flex justify-between items-center py-2 cursor-pointer hover:bg-white/5 rounded-lg px-2 -mx-2">
+                <span>📄 이용약관</span>
+                <span className="text-gray-400">→</span>
+              </div>
+              <div className="flex justify-between items-center py-2 cursor-pointer hover:bg-white/5 rounded-lg px-2 -mx-2">
+                <span>🔒 개인정보처리방침</span>
+                <span className="text-gray-400">→</span>
+              </div>
+              <div className="flex justify-between items-center py-2 px-2 -mx-2">
+                <span>📱 앱 버전</span>
+                <span className="text-gray-400">v1.0.0</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="card mb-4">
+            <h3 className="text-sm text-gray-500 mb-3">지원</h3>
+            <div className="flex justify-between items-center py-2 cursor-pointer hover:bg-white/5 rounded-lg px-2 -mx-2">
+              <span>💬 고객센터</span>
+              <span className="text-gray-400">→</span>
+            </div>
+          </div>
+
+          <div className="card mb-4">
+            <h3 className="text-sm text-gray-500 mb-3">보안</h3>
+            <div
+              className="flex justify-between items-center py-2 cursor-pointer hover:bg-white/5 rounded-lg px-2 -mx-2"
+              onClick={() => onNavigate('phone-input')}
+            >
+              <span>{isPhoneVerified ? '✅ 전화번호 인증' : '🔐 전화번호 인증'}</span>
+              <span className="text-gray-400">→</span>
+            </div>
+          </div>
+
+          <div className="card">
+            <h3 className="text-sm text-gray-500 mb-3">계정 관리</h3>
+            <div className="space-y-1">
+              <div className="flex justify-between items-center py-2 cursor-pointer hover:bg-white/5 rounded-lg px-2 -mx-2" onClick={onLogout}>
+                <span>🚪 로그아웃</span>
+                <span className="text-gray-400">→</span>
+              </div>
+              <div className="flex justify-between items-center py-2 cursor-pointer hover:bg-red-500/10 rounded-lg px-2 -mx-2 text-red-400">
+                <span>🗑️ 계정 삭제</span>
+                <span>→</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+    };
+
+    // 받기 화면
+    const ReceiveScreen = ({ onNavigate }) => {
+      const [guideView, setGuideView] = useState(null); // null, 'main', 'upbit', 'bithumb'
+      const [copied, setCopied] = useState(false);
+
+      const walletAddress = "0x1234567890abcdef1234567890abcdef12345678";
+
+      const handleCopy = () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      };
+
+      // 거래소 상세 가이드 화면
+      if (guideView === 'upbit' || guideView === 'bithumb') {
+        return (
+          <ExchangeDetailGuide
+            exchange={guideView}
+            walletAddress={walletAddress}
+            onBack={() => setGuideView('main')}
+          />
+        );
+      }
+
+      // 거래소 입금 가이드 메인 (트래블룰 + 거래소 선택)
+      if (guideView === 'main') {
+        return (
+          <div className="screen bg-[#111] text-white pb-4 overflow-y-auto">
+            <div className="p-4 flex items-center gap-3">
+              <button onClick={() => setGuideView(null)} className="text-xl">←</button>
+              <span className="text-xl font-bold">거래소에서 입금하기</span>
+            </div>
+
+            <div className="px-4">
+              {/* 트래블룰 안내 */}
+              <div className="card mb-4">
+                <h3 className="font-medium mb-3">📋 트래블룰이란?</h3>
+                <p className="text-sm text-gray-400 mb-3">
+                  한국 거래소에서 가상자산을 외부 지갑으로 출금할 때, 자금세탁방지를 위해 <span className="text-amber-400">출금 주소 사전 등록</span>이 필요합니다.
+                </p>
+                <div className="bg-[#2A2A2A] rounded-lg p-3 text-sm">
+                  <div className="flex justify-between py-1 border-b border-gray-700">
+                    <span className="text-gray-400">출금 금액</span>
+                    <span className="text-gray-400">업비트</span>
+                    <span className="text-gray-400">빗썸</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-700">
+                    <span>100만원 미만</span>
+                    <span className="text-amber-400">1:1 문의</span>
+                    <span className="text-green-400">직접 등록</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span>100만원 이상</span>
+                    <span className="text-red-400">❌ 불가</span>
+                    <span className="text-green-400">✅ 가능</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 거래소 선택 */}
+              <h3 className="font-medium mb-3">📖 거래소별 가이드</h3>
+
+              <button
+                className="card w-full flex items-center gap-4 mb-3 hover:border-amber-500/50 transition-colors"
+                onClick={() => setGuideView('upbit')}
+              >
+                <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-xl font-bold">U</div>
+                <div className="text-left flex-1">
+                  <p className="font-medium">업비트</p>
+                  <span className="badge bg-amber-500/20 text-amber-400 text-xs">⚠️ 100만원 미만만</span>
+                </div>
+                <span className="text-gray-400">→</span>
+              </button>
+
+              <button
+                className="card w-full flex items-center gap-4 mb-4 hover:border-amber-500/50 transition-colors"
+                onClick={() => setGuideView('bithumb')}
+              >
+                <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center text-xl font-bold">B</div>
+                <div className="text-left flex-1">
+                  <p className="font-medium">빗썸</p>
+                  <span className="badge bg-green-500/20 text-green-400 text-xs">✅ 100만원 이상 가능</span>
+                </div>
+                <span className="text-gray-400">→</span>
+              </button>
+
+              {/* 공통 유의사항 */}
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <p className="text-sm text-amber-400">
+                  ⚠️ <span className="font-bold">네트워크는 반드시 Ethereum (ERC20)</span>을 선택하세요. 다른 네트워크 선택 시 자산 복구가 불가합니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 기본 받기 화면
+      return (
+        <div className="screen bg-[#111] text-white">
+          <div className="p-4 flex items-center gap-3">
+            <button onClick={() => onNavigate('home')} className="text-xl">←</button>
+            <span className="text-xl font-bold">받기</span>
+          </div>
+
+          <div className="px-4 text-center">
+            {/* 서비스 정보 (트래블룰 증빙용) */}
+            <div className="card mb-4 py-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl font-bold text-black">
+                LC
+              </div>
+              <p className="font-medium">Lair Cash</p>
+            </div>
+
+            <div className="badge badge-blue mb-4">Ethereum</div>
+
+            <div className="card mb-4">
+              <div className="w-40 h-40 bg-white mx-auto mb-4 rounded-lg flex items-center justify-center">
+                <div className="grid grid-cols-5 gap-1 p-2">
+                  {[...Array(25)].map((_, i) => (
+                    <div key={i} className={`w-5 h-5 ${Math.random() > 0.5 ? 'bg-black' : 'bg-white'}`}></div>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 break-all px-2">
+                {walletAddress}
+              </p>
+            </div>
+
+            <button className="btn-primary mb-3" onClick={handleCopy}>
+              {copied ? '✓ 복사됨' : '주소 복사'}
+            </button>
+
+            <button
+              className="w-full py-3 rounded-xl bg-[#2A2A2A] font-medium mb-4 hover:bg-[#333] transition-colors"
+              onClick={() => setGuideView('main')}
+            >
+              📖 거래소에서 입금하기
+            </button>
+
+            <p className="text-sm text-amber-400">⚠️ USDC만 지원됩니다</p>
+            <p className="text-xs text-gray-500 mt-2">💡 이 화면을 캡쳐하여 거래소 심사에 제출하세요</p>
+          </div>
+        </div>
+      );
+    };
+
+    // 거래소 상세 가이드 화면 (PRD 기반 완전 재구현)
+    const ExchangeDetailGuide = ({ exchange, walletAddress, onBack }) => {
+      const [currentStep, setCurrentStep] = useState(0);
+      const [copied, setCopied] = useState(false);
+
+      const handleCopy = () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      };
+
+      const guides = {
+        upbit: {
+          name: '업비트',
+          limitBadge: { text: '⚠️ 100만원 미만만 가능', style: 'bg-amber-500/20 text-amber-400' },
+          steps: [
+            {
+              title: '출금주소 등록 신청',
+              desc: 'PC: [고객센터] → [1:1 문의하기] → [일반] → [출금주소 등록 신청]\n\n모바일: [더보기] → [고객센터] → [1:1 문의하기] → [일반] → [출금주소 등록 신청]',
+              icon: '📝',
+              path: '[고객센터] → [1:1 문의하기] → [출금주소 등록 신청]'
+            },
+            {
+              title: '증빙 자료 제출',
+              desc: 'Lair Cash 앱의 "받기" 화면 캡쳐 제출',
+              icon: '📸',
+              tip: '💡 로고 + 주소 + 네트워크가 모두 보이는 1장이면 충분'
+            },
+            {
+              title: '승인 대기',
+              desc: '유관 부서 검토 후 순차 처리',
+              icon: '⏳',
+              warning: '⚠️ 미신고 거래소 확인 과정에서 시간 소요 가능'
+            },
+            {
+              title: '출금 진행',
+              desc: '승인 완료 후 USDC 출금',
+              icon: '✅',
+              warning: '⚠️ 네트워크: 이더리움(ERC20) 필수 선택',
+              showAddress: true
+            }
+          ],
+          footer: '⚠️ 100만원 이상은 연동 지갑만 가능합니다. Lair Cash는 개인지갑으로 분류되어 100만원 이상 출금이 불가합니다.'
+        },
+        bithumb: {
+          name: '빗썸',
+          limitBadge: { text: '✅ 100만원 이상도 가능', style: 'bg-green-500/20 text-green-400' },
+          steps: [
+            {
+              title: '출금주소 등록',
+              desc: 'PC/모바일: [입출금] → [주소록] → [주소 등록]',
+              icon: '📝',
+              path: '[입출금] → [주소록] → [주소 등록]'
+            },
+            {
+              title: '거래소/지갑 선택',
+              desc: '[그 외 거래소] 선택',
+              icon: '🏦',
+              tip: '💡 Lair Cash는 화이트리스트에 없으므로 "그 외" 선택'
+            },
+            {
+              title: '정보 입력',
+              desc: '출금할 가상자산: USDC\n네트워크: Ethereum (ERC20)\n지갑 주소: Lair Cash 주소 입력',
+              icon: '✏️'
+            },
+            {
+              title: '증빙 업로드',
+              desc: 'Lair Cash "받기" 화면 캡쳐 업로드',
+              icon: '📸',
+              tip: '💡 로고 + 주소가 보이는 1장이면 충분'
+            },
+            {
+              title: '출금 진행',
+              desc: '관리자 심사 승인 후 출금 가능',
+              icon: '✅',
+              warning: '⚠️ 네트워크: Ethereum (ERC20) 필수 선택',
+              showAddress: true
+            }
+          ],
+          footer: '💡 빗썸은 증빙 제출 시 100만원 이상도 출금 가능합니다. 심사에 1~3 영업일이 소요될 수 있습니다.'
+        }
+      };
+
+      const guide = guides[exchange];
+      const step = guide.steps[currentStep];
+
+      return (
+        <div className="screen bg-[#111] text-white pb-4 overflow-y-auto">
+          <div className="p-4 flex items-center gap-3">
+            <button onClick={onBack} className="text-xl">←</button>
+            <span className="text-xl font-bold">{guide.name} 출금 가이드</span>
+          </div>
+
+          <div className="px-4">
+            {/* 제한 배지 */}
+            <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 ${guide.limitBadge.style}`}>
+              {guide.limitBadge.text}
+            </div>
+
+            {/* 진행률 */}
+            <div className="flex gap-1 mb-4">
+              {guide.steps.map((_, i) => (
+                <div
+                  key={i}
+                  className={`flex-1 h-1 rounded-full ${i <= currentStep ? 'bg-amber-500' : 'bg-gray-700'}`}
+                />
+              ))}
+            </div>
+
+            {/* 현재 단계 카드 */}
+            <div className="card mb-4 animate-fadeIn" key={currentStep}>
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center text-black font-bold text-sm flex-shrink-0">
+                  {currentStep + 1}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">{step.title}</h3>
+                </div>
+              </div>
+
+              {step.path && (
+                <div className="bg-[#2A2A2A] p-2 rounded-lg text-xs font-mono text-gray-300 mb-3">
+                  {step.path}
+                </div>
+              )}
+
+              <p className="text-gray-400 text-sm whitespace-pre-line mb-3">{step.desc}</p>
+
+              {step.tip && (
+                <div className="bg-green-500/10 border border-green-500/30 p-2 rounded-lg mb-3">
+                  <p className="text-sm text-green-400">{step.tip}</p>
+                </div>
+              )}
+
+              {step.warning && (
+                <div className="bg-amber-500/10 border border-amber-500/30 p-2 rounded-lg mb-3">
+                  <p className="text-sm text-amber-400">{step.warning}</p>
+                </div>
+              )}
+
+              {step.showAddress && (
+                <div className="bg-[#2A2A2A] p-3 rounded-lg">
+                  <p className="text-xs text-gray-500 mb-2">Lair Cash 입금 주소</p>
+                  <p className="text-xs text-amber-400 break-all font-mono mb-2">{walletAddress}</p>
+                  <button className="btn-small w-full" onClick={handleCopy}>
+                    {copied ? '✓ 복사됨' : '주소 복사'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 네비게이션 버튼 */}
+            <div className="flex gap-3 mb-4">
+              {currentStep > 0 && (
+                <button
+                  className="flex-1 py-3 rounded-xl bg-[#2A2A2A] font-medium"
+                  onClick={() => setCurrentStep(currentStep - 1)}
+                >
+                  이전
+                </button>
+              )}
+              {currentStep < guide.steps.length - 1 ? (
+                <button
+                  className="flex-1 btn-primary"
+                  onClick={() => setCurrentStep(currentStep + 1)}
+                >
+                  다음
+                </button>
+              ) : (
+                <button className="flex-1 btn-primary" onClick={onBack}>
+                  완료
+                </button>
+              )}
+            </div>
+
+            {/* 하단 안내 */}
+            <div className={`p-3 rounded-lg ${exchange === 'upbit' ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-green-500/10 border border-green-500/30'}`}>
+              <p className={`text-sm ${exchange === 'upbit' ? 'text-amber-400' : 'text-green-400'}`}>
+                {guide.footer}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // 달러로 금캐기 화면 (PRD 기반)
+    const DollarMiningScreen = ({ userData, onNavigate }) => {
+      const [selectedProduct, setSelectedProduct] = useState(null);
+      const [selectedDeposit, setSelectedDeposit] = useState(null);
+      const [depositAmount, setDepositAmount] = useState('');
+      const [showDepositModal, setShowDepositModal] = useState(false);
+      const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+
+      // PRD 기반 상품 정보 (모집 중 상품)
+      const products = [
+        {
+          id: 4,
+          name: '금캐기 4차',
+          status: 'recruiting',
+          apy: '5%',
+          maturityDays: 30,
+          maturityDate: '2026-03-10',
+          goldType: '금(XAUT)',
+          recruitedAmount: 32000,
+          targetAmount: 50000,
+          recruitEndTime: '3일 12시간 34분',
+          description: '달러로 금 캐기',
+          badge: '🟢 모집 중',
+          availableAmount: 1500
+        },
+        {
+          id: 2,
+          name: '금캐기 2차',
+          status: 'operating',
+          apy: '4.5%',
+          daysRemaining: 5,
+          description: '운영 중인 상품',
+          badge: '🔵 운용 중'
+        },
+        {
+          id: 0,
+          name: '금캐기 0차',
+          status: 'closed',
+          dateRange: '2026-01-01~01-15',
+          totalGoldDispatched: 1245.8,
+          description: '종료된 상품',
+          badge: '⬜ 종료'
+        }
+      ];
+
+      // 내 예치 현황 (데모 데이터)
+      const myDeposits = [
+        {
+          id: 'deposit_1',
+          productName: '금캐기 1차',
+          status: 'operating',
+          badge: '🔵 운용 중',
+          depositAmount: 500,
+          startDate: '2026-01-09',
+          maturityDate: '2026-02-08',
+          currentGold: 120.5,
+          expectedTotal: 150.2,
+          daysRemaining: 12,
+          interestHistory: [
+            { date: '2/3', gold: 6.72 },
+            { date: '2/2', gold: 6.72 },
+            { date: '2/1', gold: 6.72 }
+          ]
+        },
+        {
+          id: 'deposit_3',
+          productName: '금캐기 3차',
+          status: 'matured',
+          badge: '✅ 만기완료',
+          depositAmount: 300,
+          earnedGold: 90.3,
+          maturityDate: '2026-02-08'
+        }
+      ];
+
+      const handleProductClick = (product) => {
+        if (product.status === 'recruiting') {
+          setSelectedProduct(product);
+        }
+      };
+
+      const handleDepositClick = (deposit) => {
+        setSelectedDeposit(deposit);
+      };
+
+      const handleDeposit = () => {
+        setShowDepositModal(true);
+      };
+
+      const handleWithdraw = () => {
+        setShowWithdrawModal(true);
+      };
+
+      const confirmDeposit = () => {
+        // 입금 처리 로직
+        setShowDepositModal(false);
+        setSelectedProduct(null);
+        setDepositAmount('');
+      };
+
+      const confirmWithdraw = () => {
+        // 출금 처리 로직
+        setShowWithdrawModal(false);
+        setSelectedDeposit(null);
+      };
+
+      // 내 예치 상세 화면 (운용 중)
+      if (selectedDeposit && selectedDeposit.status === 'operating') {
+        return (
+          <div className="screen bg-[#111] text-white pb-20 animate-fadeIn">
+            <div className="p-4 flex items-center gap-3 border-b border-gray-800">
+              <button onClick={() => setSelectedDeposit(null)} className="text-xl">←</button>
+              <span className="text-lg font-bold">{selectedDeposit.productName} (내 예치)</span>
+            </div>
+
+            <div className="px-4 py-4">
+              {/* 상태 배지 */}
+              <div className="mb-4">
+                <span className="badge badge-blue">{selectedDeposit.badge}</span>
+              </div>
+
+              {/* 예치 현황 */}
+              <div className="card mb-4">
+                <h3 className="font-medium mb-3">내 예치 현황</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-400">예치 원금</span>
+                    <span className="text-white font-medium">${selectedDeposit.depositAmount}</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-400">현재 이자</span>
+                    <span className="text-amber-400 font-medium">{selectedDeposit.currentGold}mg</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-t border-gray-700 pt-2">
+                    <span className="text-gray-400">만기 예상</span>
+                    <span className="text-amber-400 font-bold">{selectedDeposit.expectedTotal}mg</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-400">만기까지</span>
+                    <span className="text-white">D-{selectedDeposit.daysRemaining}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 이자 적립 히스토리 */}
+              <div className="card mb-4">
+                <h3 className="font-medium mb-3">📈 이자 적립 히스토리</h3>
+                <div className="space-y-2">
+                  {selectedDeposit.interestHistory.map((item, idx) => (
+                    <div key={idx} className="flex justify-between py-2 text-sm">
+                      <span className="text-gray-400">{item.date}</span>
+                      <span className="text-amber-400">+{item.gold}mg</span>
+                    </div>
+                  ))}
+                  <div className="text-center text-xs text-gray-500 py-2">...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 내 예치 상세 화면 (만기 완료)
+      if (selectedDeposit && selectedDeposit.status === 'matured') {
+        return (
+          <div className="screen bg-[#111] text-white pb-20 animate-fadeIn">
+            <div className="p-4 flex items-center gap-3 border-b border-gray-800">
+              <button onClick={() => setSelectedDeposit(null)} className="text-xl">←</button>
+              <span className="text-lg font-bold">{selectedDeposit.productName}</span>
+            </div>
+
+            <div className="px-4 py-4">
+              {/* 상태 배지 */}
+              <div className="mb-4">
+                <span className="badge badge-gray">{selectedDeposit.badge}</span>
+              </div>
+
+              {/* 출금 정보 */}
+              <div className="card mb-4">
+                <h3 className="font-medium mb-3">🎉 출금 가능</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-400">예치 원금</span>
+                    <span className="text-white font-medium">💵 ${selectedDeposit.depositAmount}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-t border-gray-700 pt-2">
+                    <span className="text-gray-400">총 이자</span>
+                    <span className="text-amber-400 font-bold">🪙 {selectedDeposit.earnedGold}mg</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                className="btn-primary w-full"
+                onClick={handleWithdraw}
+              >
+                원금 + 이자 출금
+              </button>
+            </div>
+
+            {/* 출금 확인 모달 */}
+            {showWithdrawModal && (
+              <Modal onClose={() => setShowWithdrawModal(false)}>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-lg font-bold text-white mb-4">출금 확인</h3>
+                <div className="space-y-3 mb-4">
+                  <p className="text-gray-300 text-sm">{selectedDeposit.productName}</p>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">💵 원금</span>
+                    <span className="text-white font-medium">${selectedDeposit.depositAmount}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">🪙 이자</span>
+                    <span className="text-amber-400 font-medium">{selectedDeposit.earnedGold}mg</span>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    className="flex-1 py-3 rounded-xl bg-[#2A2A2A] text-white font-medium"
+                    onClick={() => setShowWithdrawModal(false)}
+                  >
+                    취소
+                  </button>
+                  <button
+                    className="flex-1 btn-primary"
+                    onClick={confirmWithdraw}
+                  >
+                    출금
+                  </button>
+                </div>
+              </Modal>
+            )}
+          </div>
+        );
+      }
+
+      // 상품 상세 화면 (모집 중)
+      if (selectedProduct && selectedProduct.status === 'recruiting') {
+        const recruitPercent = (selectedProduct.recruitedAmount / selectedProduct.targetAmount) * 100;
+        
+        return (
+          <div className="screen bg-[#111] text-white pb-20 animate-fadeIn">
+            <div className="p-4 flex items-center gap-3 border-b border-gray-800">
+              <button onClick={() => setSelectedProduct(null)} className="text-xl">←</button>
+              <span className="text-lg font-bold">{selectedProduct.name}</span>
+            </div>
+
+            <div className="px-4 py-4">
+              {/* 상태 배지 */}
+              <div className="mb-4">
+                <span className="badge badge-green">{selectedProduct.badge}</span>
+              </div>
+
+              {/* 상품 아이콘 및 설명 */}
+              <div className="card mb-4 text-center">
+                <div className="text-5xl mb-3">🪙</div>
+                <p className="text-gray-300">{selectedProduct.description}</p>
+                <p className="text-lg font-bold mt-2">{selectedProduct.name}</p>
+              </div>
+
+              {/* 상품 정보 */}
+              <div className="card mb-4">
+                <h3 className="font-medium mb-3">📊 상품 정보</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-400">이자율</span>
+                    <span className="text-white">연 {selectedProduct.apy} (고정)</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-400">만기</span>
+                    <span className="text-white">{selectedProduct.maturityDays}일</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-400">만기일</span>
+                    <span className="text-white">{selectedProduct.maturityDate}</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-gray-400">이자 지급</span>
+                    <span className="text-white">{selectedProduct.goldType}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 모집 현황 */}
+              <div className="card mb-4">
+                <h3 className="font-medium mb-3">📈 모집 현황</h3>
+                <div className="progress-bar mb-2">
+                  <div className="progress-fill" style={{ width: `${recruitPercent}%` }}></div>
+                </div>
+                <p className="text-sm text-gray-400 text-center">${selectedProduct.recruitedAmount.toLocaleString()} / ${selectedProduct.targetAmount.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 text-center mt-2">{recruitPercent.toFixed(0)}% 모집 완료</p>
+              </div>
+
+              {/* 모집 마감 시간 */}
+              <div className="card mb-4 bg-amber-500/10 border-amber-500/30">
+                <p className="text-sm text-gray-300">⏱️ 모집 마감까지</p>
+                <p className="text-lg font-bold text-amber-400 mt-1">{selectedProduct.recruitEndTime}</p>
+              </div>
+
+              {/* 예치 입력 */}
+              <div className="card mb-4">
+                <h3 className="font-medium mb-3">💰 예치하기</h3>
+                <p className="text-xs text-gray-400 mb-3">예치 가능 금액: ${selectedProduct.availableAmount.toLocaleString()}</p>
+                <div className="relative mb-3">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                  <input
+                    type="number"
+                    className="w-full bg-[#2A2A2A] p-4 pl-8 rounded-xl text-xl font-bold outline-none focus:ring-2 focus:ring-amber-500"
+                    placeholder="0"
+                    value={depositAmount}
+                    onChange={(e) => setDepositAmount(e.target.value)}
+                  />
+                </div>
+                <button
+                  className="btn-small"
+                  onClick={() => setDepositAmount(selectedProduct.availableAmount.toString())}
+                >
+                  MAX
+                </button>
+              </div>
+
+              {/* 예상 수령 */}
+              {depositAmount && (
+                <div className="card mb-4 bg-amber-500/10 border-amber-500/30">
+                  <p className="text-sm text-gray-300">만기 시 예상 수령</p>
+                  <p className="text-2xl font-bold text-amber-400 mt-2">
+                    🪙 {(Number(depositAmount) * 0.00082).toFixed(1)}mg
+                  </p>
+                </div>
+              )}
+
+              <button
+                className="btn-primary w-full"
+                onClick={handleDeposit}
+                disabled={!depositAmount || Number(depositAmount) <= 0}
+              >
+                예치하기
+              </button>
+            </div>
+
+            {/* 예치 확인 모달 */}
+            {showDepositModal && (
+              <Modal onClose={() => setShowDepositModal(false)}>
+                <div className="text-5xl mb-4">🪙</div>
+                <h3 className="text-lg font-bold text-white mb-4">예치 확인</h3>
+                <div className="space-y-2 mb-4 text-sm">
+                  <p className="text-gray-300">{selectedProduct.name}</p>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">예치액</span>
+                    <span className="text-white font-bold">${depositAmount}</span>
+                  </div>
+                  <div className="flex justify-between text-amber-400">
+                    <span>→</span>
+                    <span className="font-bold">🪙 {(Number(depositAmount) * 0.00082).toFixed(1)}mg 예상</span>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    className="flex-1 py-3 rounded-xl bg-[#2A2A2A] text-white font-medium text-sm"
+                    onClick={() => setShowDepositModal(false)}
+                  >
+                    취소
+                  </button>
+                  <button
+                    className="flex-1 btn-primary text-sm"
+                    onClick={confirmDeposit}
+                  >
+                    확인
+                  </button>
+                </div>
+              </Modal>
+            )}
+          </div>
+        );
+      }
+
+      // 메인 화면 (상품 목록)
+      return (
+        <div className="screen bg-[#111] text-white pb-20 animate-fadeIn">
+          <div className="p-4 flex items-center gap-3 border-b border-gray-800">
+            <button onClick={() => onNavigate('home')} className="text-xl">←</button>
+            <span className="text-lg font-bold">💰 달러로 금캐기</span>
+          </div>
+
+          <div className="px-4 py-4">
+            {/* 내 예치 현황 */}
+            {myDeposits.length > 0 && (
+              <div className="card mb-4">
+                <h3 className="font-medium mb-3">📈 내 예치 현황</h3>
+                {myDeposits.map((deposit, idx) => (
+                  <div key={idx} className="bg-[#2A2A2A] rounded-xl p-3 mb-2">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-sm font-medium">{deposit.productName}</span>
+                      <span className="badge badge-green text-xs">운용중</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <p className="text-gray-400">예치 금액</p>
+                        <p className="text-white">${deposit.depositAmount}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400">만기일</p>
+                        <p className="text-white">{deposit.maturityDate}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400">획득 금</p>
+                        <p className="text-amber-400">+{deposit.earnedGold}mg</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400">만기 예상</p>
+                        <p className="text-amber-400">+{deposit.expectedTotal}mg</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 달러 입금 버튼 */}
+            <div className="card mb-4 bg-gradient-to-r from-green-500/10 to-blue-500/10 border-green-500/30">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">💵 달러 입금하기</p>
+                  <p className="text-sm text-gray-400">USDC로 입금하고 금을 캐세요</p>
+                </div>
+                <button
+                  className="btn-small"
+                  onClick={() => onNavigate('receive')}
+                >
+                  입금 →
+                </button>
+              </div>
+            </div>
+
+            {/* 전체 상품 목록 */}
+            <h3 className="font-medium mb-3">🏦 전체 상품</h3>
+            {products.map(product => (
+              <div
+                key={product.id}
+                className={`card mb-3 cursor-pointer transition-all ${
+                  product.status === 'recruiting'
+                    ? 'hover:border-amber-500/50'
+                    : 'opacity-50'
+                }`}
+                onClick={() => handleProductClick(product)}
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <span className="font-medium">{product.name}</span>
+                    {product.badge && (
+                      <span className={`ml-2 badge ${
+                        product.status === 'recruiting' ? 'badge-gold' : 'badge-gray'
+                      } text-xs`}>
+                        {product.badge}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-gray-400">→</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <div>
+                    <p className="text-gray-400">연 수익률</p>
+                    <p className="text-green-400 font-bold">{product.apy}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-400">금 이자율</p>
+                    <p className="text-amber-400 font-medium">{product.goldRate}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">{product.description}</p>
+              </div>
+            ))}
+
+            {/* 안내 문구 */}
+            <div className="bg-[#1A1A1A] rounded-xl p-4 mt-4">
+              <p className="text-xs text-gray-400">
+                💡 달러로 금캐기는 USDC를 예치하고 금 이자를 받는 서비스입니다.<br/>
+                채권형 상품에 투자되어 안정적인 수익을 추구합니다.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // 보내기 화면
+    const SendScreen = ({ userData, onNavigate }) => {
+      const [amount, setAmount] = useState('');
+      const [step, setStep] = useState(1);
+      const [address, setAddress] = useState('');
+
+      // 전송 완료 화면
+      if (step === 4) {
+        return (
+          <div className="screen bg-[#111] text-white flex flex-col items-center justify-center px-6 animate-fadeIn">
+            <div className="text-6xl mb-6">✅</div>
+            <h1 className="text-2xl font-bold mb-2">전송 완료!</h1>
+            <p className="text-gray-400 mb-6 text-center">
+              {amount} USDC가<br/>성공적으로 전송되었습니다
+            </p>
+
+            <div className="card w-full mb-6">
+              <div className="flex justify-between py-2 border-b border-gray-700">
+                <span className="text-gray-400 text-sm">금액</span>
+                <span className="font-medium">{amount} USDC</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-700">
+                <span className="text-gray-400 text-sm">받는 주소</span>
+                <span className="text-sm">0x1234...5678</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-gray-400 text-sm">트랜잭션</span>
+                <span className="text-amber-400 text-sm">확인하기 →</span>
+              </div>
+            </div>
+
+            <button className="btn-primary w-full" onClick={() => onNavigate('home')}>
+              홈으로 돌아가기
+            </button>
+          </div>
+        );
+      }
+
+      return (
+        <div className="screen bg-[#111] text-white">
+          <div className="p-4 flex items-center gap-3">
+            <button onClick={() => step === 1 ? onNavigate('home') : setStep(step - 1)} className="text-xl">←</button>
+            <span className="text-xl font-bold">보내기</span>
+          </div>
+
+          {step === 1 && (
+            <div className="px-4 animate-fadeIn">
+              <div className="card mb-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">💵</span>
+                  <span className="font-medium">USDC</span>
+                </div>
+
+                <input
+                  type="number"
+                  className="w-full bg-transparent text-4xl font-bold text-center outline-none mb-2"
+                  placeholder="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+                <p className="text-center text-gray-400">≈ ${amount || '0'}.00</p>
+              </div>
+
+              <div className="flex justify-between items-center mb-6 text-sm">
+                <span className="text-gray-400">보유: {userData.usdcBalance.toFixed(2)} USDC</span>
+                <button className="text-amber-400 font-medium" onClick={() => setAmount(userData.usdcBalance.toString())}>MAX</button>
+              </div>
+
+              <button
+                className="btn-primary"
+                disabled={!amount || parseFloat(amount) <= 0}
+                onClick={() => setStep(2)}
+              >
+                다음
+              </button>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="px-4 animate-fadeIn">
+              <div className="card mb-6">
+                <p className="text-gray-400 text-sm mb-2">받는 주소</p>
+                <input
+                  type="text"
+                  className="w-full bg-[#2A2A2A] p-3 rounded-lg outline-none focus:ring-2 focus:ring-amber-500"
+                  placeholder="0x..."
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-3 mb-6">
+                <button className="flex-1 py-3 rounded-xl bg-[#2A2A2A] hover:bg-[#333] transition-colors">📷 QR 스캔</button>
+                <button className="flex-1 py-3 rounded-xl bg-[#2A2A2A] hover:bg-[#333] transition-colors" onClick={() => setAddress('0x1234567890abcdef1234567890abcdef12345678')}>📋 붙여넣기</button>
+              </div>
+
+              <button className="btn-primary" onClick={() => setStep(3)}>
+                다음
+              </button>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="px-4 animate-fadeIn">
+              <div className="text-center mb-6">
+                <p className="text-4xl font-bold mb-2">{amount} USDC</p>
+                <p className="text-gray-400">≈ ${amount}.00</p>
+              </div>
+
+              <div className="card mb-6">
+                <div className="flex justify-between py-3 border-b border-gray-700">
+                  <span className="text-gray-400">받는 주소</span>
+                  <span>0x1234...5678</span>
+                </div>
+                <div className="flex justify-between py-3 border-b border-gray-700">
+                  <span className="text-gray-400">네트워크</span>
+                  <span>Ethereum</span>
+                </div>
+                <div className="flex justify-between py-3">
+                  <span className="text-gray-400">가스비</span>
+                  <span className="text-green-400">무료 (가스비 대납)</span>
+                </div>
+              </div>
+
+              <div className="bg-blue-500/20 text-blue-400 p-3 rounded-lg mb-6 text-sm text-center">
+                💡 남은 무료 전송 크레딧: 5 → 4회
+              </div>
+
+              <button className="btn-primary mb-3" onClick={() => setStep(4)}>보내기</button>
+              <button className="btn-secondary w-full" onClick={() => onNavigate('home')}>취소</button>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // 튜토리얼 화면 (설정에서 진입, PRD 기반 - 금 보상 없음)
+    const TutorialScreen = ({ onComplete }) => {
+      const [step, setStep] = useState(0);
+
+      const tutorialSteps = [
+        {
+          icon: "💵",
+          title: "달러로 금캐기",
+          desc: "USDC 달러를 예치하면\n매일 자동으로 금이 쌓여요"
+        },
+        {
+          icon: "⛏️",
+          title: "금 캐기 게임",
+          desc: "쿨타임이 끝나면 버튼을 눌러\n무료로 금을 수확하세요"
+        },
+        {
+          icon: "👥",
+          title: "친구 초대",
+          desc: "친구를 초대하면 채굴량이 5배!\n배틀패스로 최대 34mg 보상"
+        },
+        {
+          icon: "👆",
+          title: "콕 찌르기",
+          desc: "친구의 쿨타임이 끝나면\n콕 찔러서 XP를 받으세요"
+        },
+        {
+          icon: "🎉",
+          title: "준비 완료!",
+          desc: "이제 Lair Cash에서\n금을 모을 준비가 됐어요"
+        }
+      ];
+
+      const currentStep = tutorialSteps[step];
+
+      return (
+        <div className="screen bg-[#111] text-white flex flex-col">
+          <div className="p-4 flex items-center gap-3">
+            <button onClick={onComplete} className="text-xl">←</button>
+            <span className="text-xl font-bold">튜토리얼</span>
+          </div>
+
+          {/* 진행률 */}
+          <div className="px-4 mb-4">
+            <div className="flex gap-1">
+              {tutorialSteps.map((_, i) => (
+                <div
+                  key={i}
+                  className={`flex-1 h-1 rounded-full ${i <= step ? 'bg-amber-500' : 'bg-gray-700'}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center px-6 animate-fadeIn" key={step}>
+            <div className="text-6xl mb-6">{currentStep.icon}</div>
+            <h2 className="text-xl font-bold mb-3">{currentStep.title}</h2>
+            <p className="text-gray-400 text-center whitespace-pre-line">{currentStep.desc}</p>
+          </div>
+
+          <div className="p-4">
+            {step < tutorialSteps.length - 1 ? (
+              <button className="btn-primary" onClick={() => setStep(step + 1)}>
+                다음
+              </button>
+            ) : (
+              <button className="btn-primary" onClick={onComplete}>
+                완료
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    // 휴대폰 인증 화면 1: 전화번호 입력
+    const PhoneVerificationScreen1 = ({ onNext, onNavigate }) => {
+      const [phoneNumber, setPhoneNumber] = useState('010-');
+
+      const handlePhoneChange = (e) => {
+        let value = e.target.value.replace(/[^\d-]/g, '');
+        if (value.length > 13) value = value.slice(0, 13);
+
+        // Auto-format: 010-XXXX-XXXX
+        if (value.length <= 3) {
+          setPhoneNumber(value);
+        } else if (value.length <= 7) {
+          setPhoneNumber(value.slice(0, 3) + '-' + value.slice(3));
+        } else {
+          setPhoneNumber(value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7));
+        }
+      };
+
+      // 🎮 데모용: 3자리 이상 입력하면 통과 (실제는 10자리 필요)
+      const isValid = phoneNumber.replace(/\D/g, '').length >= 3;
+
+      return (
+        <div className="screen bg-[#111] text-white flex flex-col">
+          <div className="p-4 flex items-center gap-3">
+            <button onClick={() => onNavigate('home')} className="text-xl">←</button>
+            <span className="text-xl font-bold">전화번호 인증</span>
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center px-6 pb-24">
+            <div className="text-center mb-8">
+              <p className="text-xl font-medium mb-4">전화번호를 인증해주세요</p>
+              <div className="bg-amber-500/20 border border-amber-500/30 rounded-lg p-4 text-sm text-gray-300">
+                <p>⚠️ 한 번 등록하면</p>
+                <p>변경할 수 없어요</p>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-xl">🇰🇷</span>
+                <span className="text-gray-400">+82</span>
+              </div>
+              <input
+                type="text"
+                className="w-full bg-[#2A2A2A] p-4 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 text-lg font-mono"
+                placeholder="010-0000-0000"
+                value={phoneNumber}
+                onChange={handlePhoneChange}
+              />
+            </div>
+
+            <button
+              className="btn-primary"
+              disabled={!isValid}
+              onClick={() => {
+                setPhoneNumber(phoneNumber);
+                onNext('phone-otp');
+              }}
+            >
+              인증번호 받기
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    // 휴대폰 인증 화면 2: OTP 입력
+    const PhoneVerificationScreen2 = ({ phoneNumber: displayPhone, onNext, onNavigate }) => {
+      const [otp, setOtp] = useState(['', '', '', '', '', '']);
+      const [timeLeft, setTimeLeft] = useState(165); // 2:45
+      const [resendDisabled, setResendDisabled] = useState(true);
+      const otpInputs = useRef([]);
+
+      useEffect(() => {
+        const timer = setInterval(() => {
+          setTimeLeft(t => {
+            if (t <= 1) {
+              clearInterval(timer);
+              setResendDisabled(false);
+              return 0;
+            }
+            return t - 1;
+          });
+        }, 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      const handleOtpChange = (index, value) => {
+        if (!/^\d?$/.test(value)) return;
+
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
+
+        // Auto-focus next input
+        if (value && index < 5) {
+          otpInputs.current[index + 1]?.focus();
+        }
+      };
+
+      const handleKeyDown = (index, e) => {
+        if (e.key === 'Backspace' && !otp[index] && index > 0) {
+          otpInputs.current[index - 1]?.focus();
+        }
+      };
+
+      // 🎮 데모용: 1자리만 입력해도 통과 (실제는 6자리 모두 필요)
+      const isComplete = otp.some(digit => digit !== '');
+
+      return (
+        <div className="screen bg-[#111] text-white flex flex-col">
+          <div className="p-4 flex items-center gap-3">
+            <button onClick={() => onNavigate('phone-input')} className="text-xl">←</button>
+            <span className="text-xl font-bold">인증번호 입력</span>
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center px-6 pb-24">
+            <div className="text-center mb-8">
+              <p className="text-gray-400 mb-2">{displayPhone}로</p>
+              <p className="font-medium mb-4">인증번호를 보냈어요</p>
+            </div>
+
+            <div className="flex justify-center gap-2 mb-8">
+              {otp.map((digit, i) => (
+                <input
+                  key={i}
+                  ref={el => otpInputs.current[i] = el}
+                  type="text"
+                  maxLength="1"
+                  className={`otp-input ${digit ? 'filled' : ''}`}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(i, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(i, e)}
+                />
+              ))}
+            </div>
+
+            <div className="text-center mb-6">
+              <p className="countdown-timer">⏱️ {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')} 남음</p>
+            </div>
+
+            <div className="text-center mb-6">
+              <p className="text-gray-400 text-sm mb-2">인증번호가 안 왔나요?</p>
+              <button
+                className={`text-sm font-medium ${resendDisabled ? 'text-gray-500' : 'text-amber-400'}`}
+                disabled={resendDisabled}
+              >
+                {resendDisabled ? `[재발송] (${resendDisabled ? Math.floor((165 - timeLeft) / 1) + '초 후 활성화' : ''})` : '[재발송]'}
+              </button>
+            </div>
+
+            <button
+              className="btn-primary"
+              disabled={!isComplete}
+              onClick={() => onNext('phone-success')}
+            >
+              인증하기
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    // 휴대폰 인증 화면 3: 성공 오버레이
+    const PhoneVerificationSuccess = ({ onComplete }) => {
+      useEffect(() => {
+        const timer = setTimeout(onComplete, 2000);
+        return () => clearTimeout(timer);
+      }, [onComplete]);
+
+      return (
+        <div className="success-overlay">
+          <div className="text-6xl mb-4 animate-popIn">✅</div>
+          <h2 className="text-2xl font-bold text-white mb-2">인증이 완료되었어요!</h2>
+          <p className="text-gray-400 text-center">이제 배틀패스가<br/>활성화됩니다</p>
+          <p className="text-xs text-gray-500 mt-4">(2초 후 자동 닫힘)</p>
+        </div>
+      );
+    };
+
+    // 배틀패스 잠금 화면 (인증 전)
+    const BattlepassLockedState = ({ onNavigate }) => (
+      <div className="screen bg-[#111] text-white">
+        <div className="p-4 flex items-center gap-3">
+          <button onClick={() => onNavigate('home')} className="text-xl">←</button>
+          <span className="text-xl font-bold">친구 초대</span>
+        </div>
+
+        <div className="locked-state px-6">
+          <div className="text-5xl">🔒</div>
+          <h2 className="text-2xl font-bold">배틀패스 잠금</h2>
+          <p className="text-gray-400 text-center">전화번호 인증 후<br/>배틀패스가 활성화됩니다</p>
+          <button
+            className="btn-primary w-full mt-6"
+            onClick={() => onNavigate('phone-input')}
+          >
+            전화번호 인증하기
+          </button>
+        </div>
+      </div>
+    );
+
+    // 수확 결과 모달 (PRD 기반: Lv.5 비교 + CTA)
+    const HarvestResultModal = ({ reward, currentLevel, nextCooldown, onClose, onLevelUp }) => {
+      const isLevelFive = currentLevel >= 5;
+      const formatCooldown = (seconds) => {
+        if (seconds < 60) return `${seconds}초`;
+        return `${Math.floor(seconds / 60)}분`;
+      };
+
+      return (
+        <div className="modal-overlay">
+          <div className="modal-content animate-popIn">
+            <div className="text-5xl mb-4">🪙</div>
+            <h3 className="text-2xl font-bold text-amber-400 mb-2">+{reward}mg 획득!</h3>
+
+            {/* Lv.5 비교 박스 (레벨 5 미만일 때만 표시) */}
+            {!isLevelFive && (
+              <div className="bg-gradient-to-r from-purple-500/20 to-amber-500/20 border border-purple-500/30 rounded-xl p-4 mb-4 w-full">
+                <p className="text-sm text-gray-300 mb-1">💎 Lv.5라면</p>
+                <p className="text-lg font-bold text-amber-400">+0.5mg 받았을 거예요</p>
+                <p className="text-xs text-gray-400 mt-1">지금보다 5배 더!</p>
+              </div>
+            )}
+
+            {/* 다음 쿨타임 */}
+            <div className="bg-[#2A2A2A] rounded-xl p-3 mb-4 w-full text-center">
+              <p className="text-sm text-gray-400">
+                ⏰ 다음 수확까지 <span className="text-white font-medium">{formatCooldown(nextCooldown)}</span>
+              </p>
+            </div>
+
+            <div className="flex gap-3 w-full">
+              <button
+                className="flex-1 py-3 rounded-xl bg-[#2A2A2A] text-white font-medium"
+                onClick={onClose}
+              >
+                확인
+              </button>
+              {!isLevelFive && (
+                <button
+                  className="flex-1 btn-primary"
+                  onClick={onLevelUp}
+                >
+                  🚀 레벨업하고 5배 받기
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Nudge 수신 팝업 (앱 진입 시, PRD 기반)
+    const NudgeReceivedPopup = ({ senderName, onClose, onStartMining }) => (
+      <div className="modal-overlay">
+        <div className="modal-content animate-popIn">
+          <div className="text-5xl mb-4">👆</div>
+          <h3 className="text-lg font-bold text-white mb-2">콕!</h3>
+          <p className="text-gray-300 mb-4">
+            {senderName}님이 당신을 콕 찔렀어요!<br/>
+            지금 금캐기를 시작하세요
+          </p>
+          <div className="flex gap-3">
+            <button className="flex-1 py-3 rounded-xl bg-[#2A2A2A] text-white" onClick={onClose}>
+              나중에
+            </button>
+            <button className="flex-1 btn-primary" onClick={onStartMining}>
+              금 캐러 가기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+
+    // ===== 메인 앱 =====
+    const App = () => {
+      const [screen, setScreen] = useState('intro');
+      const [activeTab, setActiveTab] = useState('home');
+      const [toast, setToast] = useState(null);
+      const [showNudgePopup, setShowNudgePopup] = useState(false);
+      const [nudgeSender, setNudgeSender] = useState('');
+      const [showTutorial, setShowTutorial] = useState(false);
+      const [miningCount, setMiningCount] = useState(0); // 채굴 횟수 (쿨타임 계산용)
+      const [harvestResult, setHarvestResult] = useState(null); // 수확 결과 모달 데이터
+      const [phoneVerificationStep, setPhoneVerificationStep] = useState(null); // null, 'phone-input', 'phone-otp', 'phone-success'
+      const [phoneNumber, setPhoneNumber] = useState('');
+      const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+      const containerRef = useRef(null);
+
+      // 🎮 데모용 초기 상태: 신규 유저 (아무것도 안 한 상태)
+      const [userData, setUserData] = useState({
+        goldBalance: 0,
+        usdcBalance: 0,
+        currentXP: 0,
+        claimedLevels: [],
+        miningStatus: 'ready',
+        cooldownTime: 10,
+        totalNudgeXP: 0,
+        hasReferral: false,
+      });
+
+      const [friends, setFriends] = useState(INITIAL_FRIENDS);
+      const [nickname, setNickname] = useState(''); // 닉네임 상태
+
+      const currentLevel = getCurrentLevel(userData.currentXP);
+
+      // 쿨타임 계산 함수 (PRD 기반)
+      const getNextCooldown = (count) => {
+        if (count < COOLDOWN_SEQUENCE.length) {
+          return COOLDOWN_SEQUENCE[count];
+        }
+        // 60분 이후 +5분씩 증가
+        const extraCycles = count - COOLDOWN_SEQUENCE.length;
+        return MAX_COOLDOWN + (extraCycles + 1) * COOLDOWN_INCREMENT;
+      };
+
+      const showToast = (message) => {
+        setToast(message);
+      };
+
+      // 🎮 데모용: Nudge 수신 팝업 비활성화 (깔끔한 시작을 위해)
+      // 필요시 친구 초대 화면에서 직접 Nudge를 보내면 됨
+      useEffect(() => {
+        // 자동 Nudge 팝업 비활성화됨
+      }, [screen]);
+
+      const handleMine = () => {
+        const cooldownSeconds = getNextCooldown(miningCount);
+        setUserData(prev => ({
+          ...prev,
+          miningStatus: 'mining',
+          cooldownTime: cooldownSeconds
+        }));
+
+        // 데모용: 쿨타임 단축 (실제 쿨타임의 1/10)
+        const demoCooldown = Math.min(cooldownSeconds, 10) * 1000;
+        setTimeout(() => {
+          setUserData(prev => ({
+            ...prev,
+            miningStatus: 'harvestable'
+          }));
+        }, demoCooldown);
+      };
+
+      const handleHarvest = () => {
+        const reward = currentLevel >= 5 ? 0.5 : 0.1;
+        const nextCooldown = getNextCooldown(miningCount + 1);
+        setMiningCount(prev => prev + 1);
+        setUserData(prev => ({
+          ...prev,
+          goldBalance: prev.goldBalance + reward,
+          miningStatus: 'ready',
+          cooldownTime: nextCooldown
+        }));
+        // 수확 결과 모달 표시 (PRD 기반)
+        setHarvestResult({
+          reward,
+          nextCooldown
+        });
+      };
+
+      // 수확 모달 닫기
+      const closeHarvestModal = () => {
+        setHarvestResult(null);
+      };
+
+      // 레벨업 CTA 클릭 → 친구 초대 화면으로 이동
+      const handleLevelUpCTA = () => {
+        setHarvestResult(null);
+        setActiveTab('friends');
+      };
+
+      const handleNudge = (friendId) => {
+        const friend = friends.find(f => f.id === friendId);
+        setFriends(prev => prev.map(f =>
+          f.id === friendId
+            ? { ...f, lastNudge: new Date().toDateString() }
+            : f
+        ));
+        setUserData(prev => ({
+          ...prev,
+          currentXP: prev.currentXP + 1,
+          totalNudgeXP: prev.totalNudgeXP + 1
+        }));
+        // PRD 기반 Nudge 토스트 형식
+        showToast(`👆 ${friend.name}님을 콕 찔렀어요! +1 XP`);
+
+        // 시뮬레이션: 3초 후 Nudge 성공
+        setTimeout(() => {
+          setUserData(prev => ({
+            ...prev,
+            currentXP: prev.currentXP + 3,
+            totalNudgeXP: prev.totalNudgeXP + 3
+          }));
+          // PRD 기반 Nudge 성공 토스트 형식
+          showToast(`🎉 ${friend.name}님이 금캐기를 시작했어요! +3 XP`);
+        }, 3000);
+      };
+
+      // 🎮 데모용: 친구 초대 시뮬레이션
+      const handleInviteFriend = () => {
+        // 새 친구 추가
+        const newFriendNames = ['정**', '한**', '오**', '장**', '서**', '윤**'];
+        const existingIds = friends.map(f => f.id);
+        const newId = Math.max(...existingIds, 0) + 1;
+        const randomName = newFriendNames[newId % newFriendNames.length];
+
+        const newFriend = {
+          id: newId,
+          name: randomName,
+          status: 'cooldown_ready',
+          lastNudge: null
+        };
+
+        setFriends(prev => [...prev, newFriend]);
+
+        // PRD 기반: 친구 초대 시 양쪽에 1mg 지급
+        setUserData(prev => ({
+          ...prev,
+          goldBalance: prev.goldBalance + 1,
+          currentXP: prev.currentXP + 5, // 초대 보너스 XP
+        }));
+
+        showToast(`🎉 ${randomName}님이 가입했어요! +1mg, +5 XP`);
+      };
+
+      const handleClaimReward = (level) => {
+        const reward = BATTLEPASS_LEVELS[level - 1].reward;
+        setUserData(prev => ({
+          ...prev,
+          goldBalance: prev.goldBalance + reward,
+          claimedLevels: [...prev.claimedLevels, level]
+        }));
+        showToast(`🪙 ${reward}mg 획득!`);
+      };
+
+      const handleLogin = () => {
+        // 로그인 후 레퍼럴 화면으로
+        setScreen('referral');
+      };
+
+      const handleReferralComplete = (hasCode) => {
+        const bonusGold = hasCode ? 11 : 10; // 레퍼럴 있으면 +1mg
+        setUserData(prev => ({
+          ...prev,
+          goldBalance: bonusGold,
+          hasReferral: hasCode
+        }));
+        setScreen('nickname'); // 닉네임 설정 화면으로
+        showToast(`🪙 금 ${bonusGold}mg 지급 완료!`);
+      };
+
+      const handleNicknameComplete = (name) => {
+        setNickname(name);
+        setScreen('main');
+        showToast(`👋 ${name}님, 환영합니다!`);
+      };
+
+      const handleLogout = () => {
+        setScreen('intro');
+        setActiveTab('home');
+        setMiningCount(0);
+        setNickname(''); // 닉네임 초기화
+        setIsPhoneVerified(false); // 전화번호 인증 초기화
+        setUserData({
+          goldBalance: 0,
+          usdcBalance: 0,
+          currentXP: 0,
+          claimedLevels: [],
+          miningStatus: 'ready',
+          cooldownTime: 10,
+          totalNudgeXP: 0,
+          hasReferral: false,
+        });
+        setFriends(INITIAL_FRIENDS);
+      };
+
+      const handleNudgePopupClose = () => {
+        setShowNudgePopup(false);
+      };
+
+      const handleNudgeStartMining = () => {
+        setShowNudgePopup(false);
+        handleMine();
+      };
+
+      const navigate = (tab) => {
+        if (tab === 'tutorial') {
+          setShowTutorial(true);
+        } else if (tab === 'phone-input') {
+          setPhoneVerificationStep('phone-input');
+          setPhoneNumber('');
+        } else if (tab === 'phone-otp') {
+          setPhoneVerificationStep('phone-otp');
+        } else if (tab === 'phone-success') {
+          setPhoneVerificationStep('phone-success');
+        } else if (tab === 'home') {
+          setPhoneVerificationStep(null);
+          setActiveTab('home');
+        } else {
+          setActiveTab(tab);
+        }
+      };
+
+      const renderScreen = () => {
+        // 튜토리얼 화면 (설정에서 진입)
+        if (showTutorial) {
+          return <TutorialScreen onComplete={() => setShowTutorial(false)} />;
+        }
+
+        // 휴대폰 인증 화면
+        if (phoneVerificationStep === 'phone-input') {
+          return <PhoneVerificationScreen1 onNext={navigate} onNavigate={navigate} />;
+        }
+        if (phoneVerificationStep === 'phone-otp') {
+          return <PhoneVerificationScreen2 phoneNumber={phoneNumber} onNext={navigate} onNavigate={navigate} />;
+        }
+        if (phoneVerificationStep === 'phone-success') {
+          return <PhoneVerificationSuccess onComplete={() => {
+            setIsPhoneVerified(true);
+            setPhoneVerificationStep(null);
+            navigate('friends');
+          }} />;
+        }
+
+        if (screen !== 'main') {
+          switch (screen) {
+            case 'intro':
+              return <IntroScreen onNext={() => setScreen('quiz')} />;
+            case 'quiz':
+              return <QuizScreen onComplete={() => setScreen('complete')} onSkip={() => setScreen('login')} containerRef={containerRef} />;
+            case 'complete':
+              return <CompleteScreen onNext={() => setScreen('login')} containerRef={containerRef} />;
+            case 'login':
+              return <LoginScreen onLogin={handleLogin} />;
+            case 'referral':
+              return <ReferralScreen onComplete={handleReferralComplete} onSkip={() => handleReferralComplete(false)} />;
+            case 'nickname':
+              return <NicknameScreen onComplete={handleNicknameComplete} />;
+          }
+        }
+
+        switch (activeTab) {
+          case 'home':
+            return <HomeScreen userData={{...userData, currentLevel}} onMine={handleMine} onHarvest={handleHarvest} onNavigate={navigate} containerRef={containerRef} />;
+          case 'friends':
+            return <FriendsScreen userData={{...userData, currentLevel}} friends={friends} onNudge={handleNudge} onClaimReward={handleClaimReward} onNavigate={navigate} onInviteFriend={handleInviteFriend} containerRef={containerRef} isPhoneVerified={isPhoneVerified} />;
+          case 'settings':
+            return <SettingsScreen onNavigate={navigate} onLogout={handleLogout} isPhoneVerified={isPhoneVerified} nickname={nickname} onNicknameChange={setNickname} />;
+          case 'receive':
+            return <ReceiveScreen onNavigate={navigate} />;
+          case 'send':
+            return <SendScreen userData={userData} onNavigate={navigate} />;
+          case 'dollarMining':
+            return <DollarMiningScreen userData={userData} onNavigate={navigate} />;
+          default:
+            return <HomeScreen userData={{...userData, currentLevel}} onMine={handleMine} onHarvest={handleHarvest} onNavigate={navigate} containerRef={containerRef} />;
+        }
+      };
+
+      const showNav = screen === 'main' && !['receive', 'send', 'dollarMining'].includes(activeTab) && !showTutorial;
+
+      return (
+        <div className="phone-frame" ref={containerRef}>
+          {renderScreen()}
+          {showNav && <BottomNav active={activeTab} onChange={setActiveTab} />}
+          {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+          {harvestResult && screen === 'main' && (
+            <HarvestResultModal
+              reward={harvestResult.reward}
+              currentLevel={currentLevel}
+              nextCooldown={harvestResult.nextCooldown}
+              onClose={closeHarvestModal}
+              onLevelUp={handleLevelUpCTA}
+            />
+          )}
+          {showNudgePopup && screen === 'main' && (
+            <NudgeReceivedPopup
+              senderName={nudgeSender}
+              onClose={handleNudgePopupClose}
+              onStartMining={handleNudgeStartMining}
+            />
+          )}
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
