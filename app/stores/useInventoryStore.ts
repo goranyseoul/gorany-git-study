@@ -1,5 +1,10 @@
 import { create } from 'zustand'
-import { inventoryService, InventoryItem, CreateInventoryDto } from '../services/inventory'
+import { USE_MOCK } from '../config'
+import { inventoryService as realInventoryService, InventoryItem, CreateInventoryDto } from '../services/inventory'
+import { mockInventoryService } from '../mocks/services'
+
+// Mock 모드에 따라 서비스 선택
+const inventoryService = USE_MOCK ? mockInventoryService : realInventoryService
 
 interface InventoryFilter {
   category?: string

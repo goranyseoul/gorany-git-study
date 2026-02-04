@@ -1,7 +1,12 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import * as SecureStore from 'expo-secure-store'
-import { authService } from '../services/auth'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { USE_MOCK } from '../config'
+import { authService as realAuthService } from '../services/auth'
+import { mockAuthService } from '../mocks/services'
+
+// Mock 모드에 따라 서비스 선택
+const authService = USE_MOCK ? mockAuthService : realAuthService
 
 interface User {
   id: string
@@ -27,16 +32,17 @@ interface AuthState {
   setUser: (user: User) => void
 }
 
-// SecureStore adapter for Zustand persist
-const secureStorage = {
+// Storage adapter for Zustand persist
+// Mock 모드에서는 AsyncStorage 사용 (Expo Go 호환)
+const storage = {
   getItem: async (name: string) => {
-    return await SecureStore.getItemAsync(name)
+    return await AsyncStorage.getItem(name)
   },
   setItem: async (name: string, value: string) => {
-    await SecureStore.setItemAsync(name, value)
+    await AsyncStorage.setItem(name, value)
   },
   removeItem: async (name: string) => {
-    await SecureStore.deleteItemAsync(name)
+    await AsyncStorage.removeItem(name)
   },
 }
 
@@ -141,7 +147,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      storage: createJSONStorage(() => secureStorage),
+      storage: createJSONStorage(() => storage),
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,
